@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+        <groupId>org.greencheek.mq</groupId>
+        <artifactId>yankeedo-parent</artifactId>
+		<version>1.0.0-SNAPSHOT</version>
+        <relativePath>../</relativePath>
+	</parent>
+	<artifactId>yankeedo-app</artifactId>
+	<name>${project.artifactId}</name>
+	<description>Command line application for yankee-d</description>
+
+	<properties>
+		<header.basedir>${project.parent.basedir}</header.basedir>
+	<!--
+        <zinc.version>0.3.0.20130104</zinc.version>
+	-->
+	<zinc.version>0.3.0-M1</zinc.version>
+        <scopt.version>2.1.0</scopt.version>
+
+    </properties>
+    <repositories>
+        <!-- for zinc compiler -->
+        <repository>
+            <id>excilys</id>
+            <name>Excilys Repository</name>
+            <url>http://repository.excilys.com/content/groups/public</url>
+            <releases>
+                <updatePolicy>never</updatePolicy>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
+	<dependencies>
+		<dependency>
+			<groupId>org.greencheek.mq</groupId>
+			<artifactId>yankeedo-core</artifactId>
+            <version>${project.version}</version>
+		</dependency>	
+		<dependency>
+			<groupId>com.github.scopt</groupId>
+			<artifactId>scopt_2.10</artifactId>
+            <version>${scopt.version}</version>
+		</dependency>
+        <dependency>
+            <groupId>com.typesafe.zinc</groupId>
+            <artifactId>zinc</artifactId>
+            <version>${zinc.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.ensime</groupId>
+                    <artifactId>ensime-sbt-cmd</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.typesafe.sbt</groupId>
+                    <artifactId>sbt-interface</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<artifactId>maven-jar-plugin</artifactId>
+				<configuration>
+					<archive>
+						<manifest>
+							<mainClass>org.greencheek.yankeedo.app.Yankeedo</mainClass>
+						</manifest>
+					</archive>
+				</configuration>
+			</plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>1.6</version>
+                <executions>
+                    <execution>
+                        <id>relocated-shade</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <shadedArtifactAttached>true</shadedArtifactAttached>
+                            <shadedClassifierName>relocated-shade</shadedClassifierName>
+                            <transformers>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ComponentsXmlResourceTransformer" />
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <manifestEntries>
+                                        <Main-Class>org.greencheek.yankeedo.app.Yankeedo$</Main-Class>
+                                    </manifestEntries>
+                                </transformer>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>META-INF/spring.handlers</resource>
+                                </transformer>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>META-INF/spring.schemas</resource>
+                                </transformer>
+                            </transformers>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+		</plugins>
+	</build>
+</project>
+

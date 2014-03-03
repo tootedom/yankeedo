@@ -1,0 +1,32 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <contextListener class="ch.qos.logback.classic.jul.LevelChangePropagator">
+        <resetJUL>true</resetJUL>
+    </contextListener>
+
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%date{ISO8601} [%-5level] %logger{15} - %msg%n%rEx</pattern>
+            <immediateFlush>false</immediateFlush>
+        </encoder>
+    </appender>
+
+    <appender name="APP" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>[%date{ISO8601}]: %msg%n%rEx</pattern>
+            <immediateFlush>false</immediateFlush>
+        </encoder>
+    </appender>
+
+    <logger name="org.greencheek.jms.yankeedo.scenarioexecution.producer.ProducerExecutor" level="INFO" aditivity="false"/>
+    <logger name="org.greencheek.jms.yankeedo.scenarioexecution.consumer" level="INFO" aditivity="false"/>
+    <logger name="org.greencheek.jms.yankeedo.scenarioexecution" level="INFO" aditivity="false"/>
+
+    <logger name="org.greencheek.jms.yankeedo.app" level="INFO" aditivity="false"/>
+
+    <root level="WARN" aditivity="false">
+        <appender-ref ref="CONSOLE" />
+    </root>
+
+</configuration>

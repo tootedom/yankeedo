@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Copyright 2012-2013 greencheek.org (www.greencheek.org)
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+    		http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+
+-->
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <bean id="amqConnectionFactory" class="org.apache.activemq.ActiveMQConnectionFactory">
+        <property name="brokerURL" value="${jms.broker.url:tcp://localhost:61616?daemon=true}" />
+        <property name="statsEnabled" value="${jms.connection.stats.enabled:false}" />
+        <property name="copyMessageOnSend" value="${jms.copyMessageOnSend:false}" />
+        <property name="useAsyncSend" value="${jms.useAsyncSend:false}" />
+        <property name="prefetchPolicy">
+            <bean id="prefetchPolicy" class="org.apache.activemq.ActiveMQPrefetchPolicy">
+                <property name="all" value="${jms.prefetch:1}" />
+            </bean>
+        </property>
+
+        <property name="redeliveryPolicy">
+            <bean id="redeliveryPolicy" class="org.apache.activemq.RedeliveryPolicy">
+                <property name="initialRedeliveryDelay" value="${jms.redelivery.initialDeply:1000}" />
+                <property name="backOffMultiplier" value="${jms.redelivery.backOffMultiplier:1}" />
+                <property name="useExponentialBackOff" value="${jms.redelivery.useExponentialBackOff:false}" />
+                <property name="maximumRedeliveries" value="${jms.redelivery.maximumRedeliveries:2}" />
+                <property name="destination">
+                    <bean class="org.apache.activemq.command.ActiveMQQueue">
+                        <property name="physicalName" value=">"/>
+                    </bean>
+                </property>
+            </bean>
+        </property>
+
+    </bean>
+
+
+    <bean id="cachingConnectionFactory"
+          class="org.springframework.jms.connection.CachingConnectionFactory" destroy-method="resetConnection">
+        <property name="targetConnectionFactory" ref="amqConnectionFactory"></property>
+        <property name="cacheConsumers" value="true"></property>
+        <property name="cacheProducers" value="true"></property>
+        <property name="reconnectOnException" value="true"></property>
+        <property name="sessionCacheSize" value="${jms.sessioncachesize:10}"></property>
+    </bean>
+
+    <!--<bean id="cachingConnectionFactory" class="org.apache.activemq.pool.PooledConnectionFactory">-->
+        <!--<property name="maxConnections" value="8"/>-->
+        <!--<property name="maximumActiveSessionPerConnection" value="500"/>-->
+        <!--<property name="connectionFactory" ref="amqConnectionFactory"/>-->
+    <!--</bean>-->
+
+    <bean id="jmsConfig" class="org.apache.camel.component.jms.JmsConfiguration">
+        <property name="connectionFactory" ref="cachingConnectionFactory" />
+        <property name="transacted" value="${jms.transacted:false}" />
+        <property name="concurrentConsumers" value="${jms.concurrentConsumer:1}" />
+        <property name="maxConcurrentConsumers" value="${jms.max.concurrentConsumer:1}" />
+        <property name="deliveryPersistent" value="${jms.persistent.delivery:true}"/>
+        <property name="preserveMessageQos" value="true" />
+        <property name="acknowledgementMode" value="${jms.ackMode:2}"/>
+        <property name="timeToLive" value="${jms.timeToLive:2000}" />
+        <!--<property name="cacheLevelName" value="CACHE_PRODUCER" />-->
+    </bean>
+
+    <bean id="jms" class="org.apache.camel.component.jms.JmsComponent">
+        <constructor-arg index="0" ref="jmsConfig"/>
+    </bean>
+
+
+
+    <!--<camel:camelContext id="camelContext">-->
+    <!--</camel:camelContext>-->
+    <!--<akka:camel-service id="camelService">-->
+        <!--<akka:camel-context ref="camelContext" />-->
+    <!--</akka:camel-service>-->
+</beans>
