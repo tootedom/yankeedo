@@ -65,24 +65,24 @@ class ScenarioExecutionMonitor(val scenario : Scenario,
 
   override def receive = {
     case ConsumerFinished => {
-      doStopWithScheduledTimerStop
+      doStopWithScheduledTimerStop()
     }
     case ProducerFinished => {
-      doStopWithScheduledTimerStop
+      doStopWithScheduledTimerStop()
     }
     case x: ScenarioExecutionMonitorRunDurationFinished => {
-      doStop
+      doStop()
     }
   }
 
-  private def doStopWithScheduledTimerStop : Unit = {
-    stopRunForDuration
-    doStop
+  private def doStopWithScheduledTimerStop() : Unit = {
+    stopRunForDuration()
+    doStop()
   }
 
-  private def doStop : Unit = {
-    actorFinished
-    stopChildren
+  private def doStop() : Unit = {
+    actorFinished()
+    stopChildren()
     notifyParentScenarioHasFinished()
   }
 
@@ -90,16 +90,16 @@ class ScenarioExecutionMonitor(val scenario : Scenario,
     info("Scenario finished:" + scenario)
   }
 
-  private def stopRunForDuration : Unit = {
+  private def stopRunForDuration() : Unit = {
     runForDuration match {
       case Some(x) => {
-        x.cancel();
+        x.cancel()
       }
       case _ => {}
     }
   }
 
-  private def stopChildren : Unit = {
+  private def stopChildren() : Unit = {
     for (child : ActorRef <- childrenActorRefs) context.stop(child)
   }
 

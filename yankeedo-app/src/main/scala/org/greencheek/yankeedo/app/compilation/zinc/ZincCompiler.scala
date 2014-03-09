@@ -17,11 +17,10 @@ package org.greencheek.app.compilation.zinc
 
 import java.io.{ File => JFile }
 import java.net.URLClassLoader
-import sbt.inc.IncOptions
 import scala.tools.nsc.io.{ Directory, Path }
 import scala.tools.nsc.io.Path.{ jfile2path, string2path }
 
-import com.typesafe.zinc.{ Compiler, Inputs, Setup }
+import com.typesafe.zinc.{IncOptions, Compiler, Inputs, Setup}
 
 import grizzled.slf4j.Logging
 import xsbti.Logger
@@ -50,6 +49,7 @@ object ZincCompiler extends Logging {
 				.deepFiles
 				.toList
 				.collect { case file if (file.hasExtension("scala")) => file.jfile }
+        .toSeq
 
 			def analysisCacheMapEntry(directoryName: String) = (YANKEEDO_HOME / directoryName).jfile -> (binDir / "cache" / directoryName).jfile
 
@@ -63,10 +63,10 @@ object ZincCompiler extends Logging {
         forceClean = false,
         javaOnly = false,
         compileOrder = CompileOrder.JavaThenScala,
-	incOptions = IncOptions.Default,
+	      incOptions = IncOptions(),
         outputRelations = None,
         outputProducts = None,
-	mirrorAnalysis = false)
+	      mirrorAnalysis = false)
     }
 
 		def setupZincCompiler(): Setup = {
@@ -83,7 +83,8 @@ object ZincCompiler extends Logging {
         scalaExtra = List(scalaReflect),
 				sbtInterface = sbtInterfaceSrc,
 				compilerInterfaceSrc = compilerInterfaceSrc,
-				javaHomeDir = None)
+				javaHomeDir = None,
+        forkJava = true)
 		}
 
 		// Setup the compiler

@@ -23,12 +23,12 @@ package org.greencheek.yankeedo.app
 object CommandLineConstants {
 
 
-  val CLI_SCENARAIOS_FOLDER = "ssl"
+  val CLI_SCENARAIOS_FOLDER = 's'
   val CLI_SCENARAIOS_FOLDER_ALIAS = "scenario-source-location"
-  val CLI_SCENARAIOS_BINARIES_FOLDER = "sbl"
+  val CLI_SCENARAIOS_BINARIES_FOLDER = 'b'
   val CLI_SCENARAIOS_BINARIES_FOLDER_ALIAS = "scenario-binaries-location"
-  val CLI_SCENARAIO_NAME = "sn"
+  val CLI_SCENARAIO_NAME = 'n'
   val CLI_SCENARAIO_NAME_ALIAS = "scenario-name"
-  val CLI_HELP = "h"
+  val CLI_HELP = 'h'
   val CLI_HELP_ALIAS = "help"
 }

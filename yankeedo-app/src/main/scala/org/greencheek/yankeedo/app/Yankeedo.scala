@@ -19,23 +19,23 @@ import grizzled.slf4j.Logging
 
 
 import CommandLineConstants._
-import com.typesafe.config.ConfigFactory
 import java.util.{HashMap => JMap}
 import org.greencheek.jms.yankeedo.structure.scenario.ScenarioContainer
 
-import scopt.mutable.OptionParser
 import org.greencheek.app.compilation.scenario.ScenarioClassLoader
 import java.util.concurrent.CountDownLatch
 import akka.actor.{Props, ActorSystem}
 import org.greencheek.jms.yankeedo.scenarioexecution.{StartExecutingScenarios, ScenariosExecutionManager}
 import java.io.{File => JFile}
 import java.net.URLClassLoader
+import com.typesafe.config.ConfigFactory
 
 /**
  * User: dominictootell
  * Date: 19/01/2013
  * Time: 15:03
  */
+
 object Yankeedo extends App with Logging {
 
   val INCORRECT_ARGUMENTS = -1;
@@ -49,11 +49,11 @@ object Yankeedo extends App with Logging {
   def runYankeedo(args: Array[String]) : Int = {
     val props = YankeedoCommandLineArgs
 
-    val cliOptsParser = new OptionParser("gatling") {
-      opt(CLI_SCENARAIOS_FOLDER, CLI_SCENARAIOS_FOLDER_ALIAS, "<directoryPath>", "Uses <directoryPath> to discover scenarios that could be run", { v: String => props.sourcesDirectory(v) })
-      opt(CLI_SCENARAIOS_BINARIES_FOLDER, CLI_SCENARAIOS_BINARIES_FOLDER_ALIAS, "<directoryPath>", "Uses <directoryPath> to discover already compiled simulations", { v: String => props.binariesDirectory(v) })
-      opt(CLI_SCENARAIO_NAME, CLI_SCENARAIO_NAME_ALIAS, "<className>", "Runs <className> scenario", { v: String => props.runScenarioWithName(v) })
-      help(CLI_HELP,CLI_HELP_ALIAS,"displays the options available")
+    val cliOptsParser = new scopt.OptionParser[Unit]("gatling") {
+      help(CLI_HELP_ALIAS) text("displays the options available")
+      opt[String](CLI_SCENARAIOS_FOLDER, CLI_SCENARAIOS_FOLDER_ALIAS) action { (v,Unit) => props.sourcesDirectory(v) } text("Uses <directoryPath> to discover scenarios that could be run")
+      opt[String](CLI_SCENARAIOS_BINARIES_FOLDER, CLI_SCENARAIOS_BINARIES_FOLDER_ALIAS) action { (v,Unit) => props.binariesDirectory(v) } text("Uses <directoryPath> to discover already compiled simulations")
+      opt[String](CLI_SCENARAIO_NAME, CLI_SCENARAIO_NAME_ALIAS) action { (v,Unit)  => props.runScenarioWithName(v) } text("Runs <className> scenario")
     }
 
     // if arguments are incorrect, usage message is displayed
@@ -61,13 +61,13 @@ object Yankeedo extends App with Logging {
     else INCORRECT_ARGUMENTS
   }
 
-  def runWithConfig(props : JMap[String,Any]) : Int = {
+  def runWithConfig(commandLineOpts : java.util.Map[String,AnyRef]) : Int = {
 
     val classLoader = getClass.getClassLoader
 
     val defaultsConfig = ConfigFactory.parseResources(classLoader, "yankeedo-defaults.conf")
     val customConfig = ConfigFactory.parseResources(classLoader, "yankeedo.conf")
-    val propertiesConfig = ConfigFactory.parseMap(props,null)
+    val propertiesConfig = ConfigFactory.parseMap(commandLineOpts,"Command line options")
 
 
     val config = propertiesConfig.withFallback(customConfig).withFallback(defaultsConfig)

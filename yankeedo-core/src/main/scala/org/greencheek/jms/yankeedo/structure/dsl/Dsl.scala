@@ -172,7 +172,7 @@ object Dsl {
       with_broker_ack()
     }
 
-    def with_broker_ack = {
+    def with_broker_ack() = {
       new ProducerPopulatedScenario(
         producerScenario.action.withAsyncSend(false),
         producerScenario.scenario
@@ -180,10 +180,10 @@ object Dsl {
     }
 
     def with_no_broker_ack(chain: and.type): ProducerPopulatedScenario = {
-      with_no_broker_ack
+      with_no_broker_ack()
     }
 
-    def with_no_broker_ack = {
+    def with_no_broker_ack() = {
       new ProducerPopulatedScenario(
         producerScenario.action.withAsyncSend(true),
         producerScenario.scenario
@@ -194,7 +194,7 @@ object Dsl {
       with_no_persistent_delivery()
     }
 
-    def with_no_persistent_delivery = {
+    def with_no_persistent_delivery() = {
       new ProducerPopulatedScenario(
         producerScenario.action.withPersistentDelivery(false),
         producerScenario.scenario
@@ -205,7 +205,7 @@ object Dsl {
       with_persistent_delivery()
     }
 
-    def with_persistent_delivery = {
+    def with_persistent_delivery() = {
       new ProducerPopulatedScenario(
         producerScenario.action.withPersistentDelivery(true),
         producerScenario.scenario

@@ -18,6 +18,7 @@ package org.greencheek.yankeedo.app
 import tools.nsc.io.{Directory, Path}
 import java.util.{HashMap => JMap}
 import org.greencheek.yankeedo.app.ConfigConstants._
+import scala.collection.JavaConversions
 
 /**
  * User: dominictootell
@@ -27,7 +28,7 @@ import org.greencheek.yankeedo.app.ConfigConstants._
 object YankeedoCommandLineArgs {
 
 
-  private val props : JMap[String,Any] = new JMap()
+  private val props : JMap[String,AnyRef] = new JMap()
 
 
   def sourcesDirectory(v: String) {

@@ -8,17 +8,16 @@
         <relativePath>../</relativePath>
 	</parent>
 	<artifactId>yankeedo-app</artifactId>
-	<name>${project.artifactId}</name>
-	<description>Command line application for yankee-d</description>
+	<name>Yankeedo Command Line App</name>
+	<description>Command line application for yankeedo</description>
 
 	<properties>
 		<header.basedir>${project.parent.basedir}</header.basedir>
 	<!--
         <zinc.version>0.3.0.20130104</zinc.version>
 	-->
-	<zinc.version>0.3.0-M1</zinc.version>
-        <scopt.version>2.1.0</scopt.version>
-
+	    <zinc.version>0.3.2-M1</zinc.version>
+        <scopt.version>3.2.0</scopt.version>
     </properties>
     <repositories>
         <!-- for zinc compiler -->

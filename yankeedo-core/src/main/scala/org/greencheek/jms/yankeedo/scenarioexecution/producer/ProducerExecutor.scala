@@ -36,17 +36,20 @@ class ProducerExecutor(val scenario : Scenario) extends Actor with Logging {
 
   val messagesSendOk = new AtomicLong(0)
   val messagesNotSendOk = new AtomicLong(0)
-  val producer = context.actorOf(Props(new ProducerMessageRouter(scenario,producerActorCreation(scenario,self,_,_))))
+  val producer = context.actorOf(Props(new ProducerMessageRouter(scenario,producerActorCreation(scenario,self,_,_))),"producermonitor")
   val isScheduledMessageSender = scenario.jmsAction.asInstanceOf[Producer].delayBetweenMessages.isInstanceOf[FiniteDuration]
 
   val started = new AtomicBoolean(false)
+  val productMonitorTerminated = new AtomicBoolean(false)
+
+  context.watch(producer)
 
   val runForDuration : Option[Cancellable] = {
     scenario.jmsAction.asInstanceOf[Producer].delayBetweenMessages match {
       case duration:FiniteDuration => {
         import context.dispatcher
         Some(context.system.scheduler.schedule(duration,duration) {
-          if (started.get() && !producer.isTerminated)  {
+          if (started.get() && !productMonitorTerminated.get())  {
             producer ! SendMessage
           }
         })
@@ -77,14 +80,16 @@ class ProducerExecutor(val scenario : Scenario) extends Actor with Logging {
       messagesNotSendOk.incrementAndGet()
       sendMessage
     }
-
+    case Terminated(`producer`) => {
+      productMonitorTerminated.set(true)
+    }
   }
 
   override def postStop = {
-    stopSendScheduler
+    stopSendScheduler()
   }
 
-  private def stopSendScheduler = {
+  private def stopSendScheduler() = {
     runForDuration match {
       case Some(x) => {
         if(!x.isCancelled) x.cancel()
