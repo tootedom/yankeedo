@@ -73,6 +73,7 @@
         <property name="preserveMessageQos" value="true" />
         <property name="acknowledgementMode" value="${jms.ackMode:2}"/>
         <property name="timeToLive" value="${jms.timeToLive:2000}" />
+
         <!--<property name="cacheLevelName" value="CACHE_PRODUCER" />-->
     </bean>
 

@@ -38,15 +38,15 @@ class ScenariosExecutionManager(val applicationLatch : CountDownLatch,
 
   val scenariosRunning = new AtomicLong(scenarioContainer.size)
 
-  val scenarioSystems : List[ActorSystem] = {
-    val systems = ArrayBuffer[ActorSystem]()
-
-    for ((_,scenarioNumber) <- scenarioContainer.scenarios.zipWithIndex) {
-      systems += ActorSystem("scenario-" + scenarioNumber)
-    }
-
-    systems.toList
-  }
+//  val scenarioSystems : List[ActorSystem] = {
+//    val systems = ArrayBuffer[ActorSystem]()
+//
+//    for ((_,scenarioNumber) <- scenarioContainer.scenarios.zipWithIndex) {
+//      systems += ActorSystem("scenario-" + scenarioNumber)
+//    }
+//
+//    systems.toList
+//  }
 
 
   val runForDuration : Option[Cancellable] = {
@@ -67,11 +67,11 @@ class ScenariosExecutionManager(val applicationLatch : CountDownLatch,
 
     case StartExecutingScenarios => {
       for ( (executionScenario,i) <- scenarioContainer.scenarios.zipWithIndex) {
-        val system = scenarioSystems(i)
+//        val system = scenarioSystems(i)
         val scenarioActor =
           executionScenario.jmsAction match {
-            case x:JmsConsumerAction => system.actorOf(Props(new ConsumerExecutor(executionScenario)))
-            case x:JmsProducerAction => system.actorOf(Props(new ProducerExecutor(executionScenario)))
+            case x:JmsConsumerAction => context.actorOf(Props(new ConsumerExecutor(executionScenario)),"ConsumerExecutor")
+            case x:JmsProducerAction => context.actorOf(Props(new ProducerExecutor(executionScenario)),"ProducerExecutor")
           }
 
         context.watch(scenarioActor)
@@ -99,9 +99,9 @@ class ScenariosExecutionManager(val applicationLatch : CountDownLatch,
   private def stopExecution(): Unit = {
 
 
-    for (system <- scenarioSystems) {
-      system.shutdown()
-    }
+//    for (system <- scenarioSystems) {
+//      system.shutdown()
+//    }
 
     context.stop(self)
 
