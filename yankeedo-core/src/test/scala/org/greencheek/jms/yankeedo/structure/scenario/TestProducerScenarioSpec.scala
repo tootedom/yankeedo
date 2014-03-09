@@ -23,7 +23,7 @@ import org.specs2.mutable.Specification
 import org.apache.activemq.broker.BrokerService
 import org.greencheek.jms.yankeedo.structure.dsl.Dsl._
 import org.greencheek.jms.util.PortUtil
-import org.specs2.specification.{BeforeAfter}
+import org.specs2.specification.{Step, BeforeAfter}
 import org.specs2.runner.JUnitRunner
 import org.junit.runner.RunWith
 import org.apache.activemq.broker.jmx.ManagementContext
@@ -34,24 +34,26 @@ import org.apache.activemq.broker.jmx.ManagementContext
  */
 @RunWith(classOf[JUnitRunner])
 class TestProducerScenarioSpec extends Specification {
+  sequential
 
   case class withBroker() extends BeforeAfter {
-    val broker : BrokerService = new BrokerService();
-    broker.setPersistent(false)
-    broker.setUseJmx(true)
-    val mctx = new ManagementContext(java.lang.management.ManagementFactory.getPlatformMBeanServer)
-    mctx.setCreateMBeanServer(false)
-    mctx.setCreateConnector(false)
-    mctx.setUseMBeanServer(true)
-    broker.setManagementContext(mctx)
-
+    var broker : BrokerService = null
     val port : Int = PortUtil.findFreePort
     var appLatch : CountDownLatch = null
     var actorSystem : ActorSystem = null
     var scenarioExecutor : ActorRef = null
 
     def before = {
+      broker = new BrokerService()
       broker.setPersistent(false)
+      broker.setUseJmx(true)
+      val mctx = new ManagementContext(java.lang.management.ManagementFactory.getPlatformMBeanServer)
+      mctx.setCreateMBeanServer(false)
+      mctx.setCreateConnector(false)
+      mctx.setUseMBeanServer(true)
+      mctx.setFindTigerMbeanServer(false)
+      broker.setManagementContext(mctx)
+
       broker.start()
 
       appLatch = new CountDownLatch(1)
@@ -63,11 +65,12 @@ class TestProducerScenarioSpec extends Specification {
     }
   }
 
+  val myContext = withBroker();
+
   "Producing messages" should {
+    sequential
 
-    implicit val myContext = new withBroker()
-
-    "terminate after 10 messages" >> {
+    "terminate after 10 messages" in myContext {
       val scenario = createScenario(
         "produce 10 message scenario" connect_to "vm://localhost:" +  myContext.port
           until_no_of_messages_sent 10
@@ -94,5 +97,41 @@ class TestProducerScenarioSpec extends Specification {
 
 
     }
+
+    "terminate after 10 seconds" in myContext {
+      val scenario = createScenario(
+        "produce messages for 2 seconds scenario" connect_to "vm://localhost:" +  myContext.port
+          run_for Duration(2,SECONDS)
+          until_no_of_messages_sent -1
+          produce to queue "my2secondqueue"
+      )
+
+      myContext.scenarioExecutor = myContext.actorSystem.actorOf(Props(new ScenariosExecutionManager(myContext.appLatch,ScenarioContainer(scenario))))
+      myContext.scenarioExecutor ! StartExecutingScenarios
+
+      val start : Long = System.currentTimeMillis()
+      var ok : Boolean = false
+      try {
+        ok = myContext.appLatch.await(10,TimeUnit.SECONDS)
+      } catch {
+        case e: Exception => {
+
+        }
+      }
+      val end : Long = System.currentTimeMillis()-start
+
+      ok should beTrue
+      end should be lessThan(5000)
+
+      myContext.broker.getAdminView.getTotalMessageCount should be greaterThan(1)
+      System.out.println("count" + myContext.broker.getAdminView.getTotalMessageCount )
+      myContext.broker.getAdminView.getQueues.filter(name => name.toString.contains("my2secondqueue")).size should be greaterThan(0)
+      myContext.broker.getAdminView.getTotalProducerCount should beEqualTo(0)
+
+
+
+    }
   }
+
+
 }

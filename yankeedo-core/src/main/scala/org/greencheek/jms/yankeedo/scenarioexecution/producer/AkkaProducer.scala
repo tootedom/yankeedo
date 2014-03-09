@@ -20,7 +20,7 @@ import org.greencheek.jms.yankeedo.structure.actions.{JmsProducerAction => JmsPr
 import java.util.concurrent.atomic.{AtomicBoolean, AtomicLong}
 import akka.camel.{CamelMessage, Oneway, Producer}
 import org.greencheek.jms.yankeedo.scenarioexecution.ProducerFinished
-import akka.actor.{ActorRef, Actor, ActorInitializationException}
+import akka.actor.{Terminated, ActorRef, Actor, ActorInitializationException}
 import akka.actor.Status.Failure
 
 /**

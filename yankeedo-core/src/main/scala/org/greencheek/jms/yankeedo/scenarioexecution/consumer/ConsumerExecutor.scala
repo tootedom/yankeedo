@@ -42,23 +42,20 @@ class ConsumerExecutor(val scenario : Scenario) extends Actor with Logging {
     }
     case _ => {
     }
-    case Terminated => {
-      error("ConsumerExecutor terminated")
-    }
   }
 
   private def consumerActorCreation(scenario : Scenario, ctx : ActorContext, messagesToProcess : AtomicLong) : List[ActorRef] =  {
     var actorRefs : List[ActorRef] = Nil
     for( i <- 1 to scenario.numberOfActors) {
-      actorRefs ::= createActor(scenario,ctx,messagesToProcess)
+      actorRefs ::= createActor(i,scenario,ctx,messagesToProcess)
     }
     actorRefs
   }
 
-  private def createActor(scenario: Scenario, ctx: ActorContext, messagesToProcess: AtomicLong): ActorRef = {
+  private def createActor(actorNumber : Int, scenario: Scenario, ctx: ActorContext, messagesToProcess: AtomicLong): ActorRef = {
     ctx.actorOf(Props(
       new AkkaConsumer(scenario.jmsAction.asInstanceOf[Consumer],
                        scenario.jmsAction.asInstanceOf[Consumer].messageProcessor,
-                       messagesToProcess)))
+                       messagesToProcess)),"ConsumerActor"+actorNumber)
   }
 }

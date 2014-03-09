@@ -33,25 +33,29 @@ class ProducerMessageRouter(scenario : Scenario,
 
 
   val messagesToSend = new AtomicLong(scenario.numberOfMessages)
-  val infinite : Boolean = if(messagesToSend == -1) true else false
+  val infinite : Boolean = if(messagesToSend.get() == -1) true else false
   val stopped = new AtomicBoolean(false)
 
 
-  val router = context.actorOf(new RoundRobinGroup(JavaConversions.asJavaIterable(for (actorRef <- childrenActorRefs) yield actorRef.path.toString)).props())
+  val router = context.actorOf(new RoundRobinGroup(JavaConversions.asJavaIterable(for (actorRef <- childrenActorRefs) yield actorRef.path.toString)).props(),"ProducerMessageRouter")
 
   override def receive = super.receive orElse {
     case SendMessage => {
       if (!stopped.get) {
-        val currentMessageNumber = messagesToSend.decrementAndGet()
+        if(!infinite) {
+          val currentMessageNumber = messagesToSend.decrementAndGet()
 
-        if (currentMessageNumber == -1) {
-          markAsStopped
-          notifyMonitor
-        }
-        else if (currentMessageNumber < -1) {
-          markAsStopped
-        }
-        else {
+          if (currentMessageNumber == -1 ) {
+            markAsStopped
+            notifyMonitor
+          }
+          else if (currentMessageNumber < -1) {
+            markAsStopped
+          }
+          else {
+            router ! scenario.jmsAction.asInstanceOf[Producer].messageSource.getMessage
+          }
+        } else {
           router ! scenario.jmsAction.asInstanceOf[Producer].messageSource.getMessage
         }
 

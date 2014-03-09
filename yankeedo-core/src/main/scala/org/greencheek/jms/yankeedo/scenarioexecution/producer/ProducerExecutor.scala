@@ -107,12 +107,12 @@ class ProducerExecutor(val scenario : Scenario) extends Actor with Logging {
   private def producerActorCreation(scenario : Scenario, responseReciever : ActorRef, ctx : ActorContext, numberOfMessages : AtomicLong) : List[ActorRef] =  {
     var actorRefs : List[ActorRef] = Nil
     for( i <- 1 to scenario.numberOfActors) {
-      actorRefs ::= createActor(scenario,responseReciever,ctx)
+      actorRefs ::= createActor(i,scenario,responseReciever,ctx)
     }
     actorRefs
   }
 
-  private def createActor(scenario : Scenario,responseReciever : ActorRef,ctx : ActorContext) : ActorRef = {
-    ctx.actorOf(Props(new AkkaProducer(scenario.jmsAction.asInstanceOf[Producer],responseReciever)))
+  private def createActor(actorNumber : Int, scenario : Scenario,responseReciever : ActorRef,ctx : ActorContext) : ActorRef = {
+    ctx.actorOf(Props(new AkkaProducer(scenario.jmsAction.asInstanceOf[Producer],responseReciever)),"ProducerActor"+actorNumber)
   }
 }

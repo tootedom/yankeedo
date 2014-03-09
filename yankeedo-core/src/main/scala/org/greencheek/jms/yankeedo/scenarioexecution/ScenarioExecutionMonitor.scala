@@ -81,8 +81,8 @@ class ScenarioExecutionMonitor(val scenario : Scenario,
   }
 
   private def doStop() : Unit = {
-    actorFinished()
     stopChildren()
+    actorFinished()
     notifyParentScenarioHasFinished()
   }
 
