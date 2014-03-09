@@ -42,6 +42,9 @@ class ConsumerExecutor(val scenario : Scenario) extends Actor with Logging {
     }
     case _ => {
     }
+    case Terminated => {
+      error("ConsumerExecutor terminated")
+    }
   }
 
   private def consumerActorCreation(scenario : Scenario, ctx : ActorContext, messagesToProcess : AtomicLong) : List[ActorRef] =  {

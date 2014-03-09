@@ -50,7 +50,7 @@
 
 
     <bean id="cachingConnectionFactory"
-          class="org.springframework.jms.connection.CachingConnectionFactory" destroy-method="resetConnection">
+          class="org.springframework.jms.connection.CachingConnectionFactory" destroy-method="destroy">
         <property name="targetConnectionFactory" ref="amqConnectionFactory"></property>
         <property name="cacheConsumers" value="true"></property>
         <property name="cacheProducers" value="true"></property>
@@ -76,7 +76,7 @@
         <!--<property name="cacheLevelName" value="CACHE_PRODUCER" />-->
     </bean>
 
-    <bean id="jms" class="org.apache.camel.component.jms.JmsComponent">
+    <bean id="jms" class="org.apache.camel.component.jms.JmsComponent" destroy-method="shutdown">
         <constructor-arg index="0" ref="jmsConfig"/>
     </bean>
 

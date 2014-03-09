@@ -107,6 +107,9 @@ class ScenarioExecutionMonitor(val scenario : Scenario,
   private def actorFinished() {
     debug("ExecutionMonitor for scenario is shutting down:" + scenario)
 
+    debug("Shutting down ExecutionMonitor's application context")
+    jmsComponent.stop()
+
     debug("Stopping ExecutionMonitor actor")
     context.stop(self)
 
@@ -117,8 +120,7 @@ class ScenarioExecutionMonitor(val scenario : Scenario,
       case e : Exception => {}
     }
 
-    debug("Shutting down ExecutionMonitor's application context")
-    jmsComponent.stop()
+
 
 
   }

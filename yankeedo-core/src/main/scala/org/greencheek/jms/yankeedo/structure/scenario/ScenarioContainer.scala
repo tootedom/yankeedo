@@ -27,26 +27,32 @@ import concurrent.duration.Duration
 trait ScenarioContainer {
 
    @volatile private var _totalDuration : Duration = Duration.Inf
-   @volatile private var _scenarios : List[Scenario] = Nil
+   @volatile private var _scenarios : Seq[Scenario] = Nil
 
   /**
    * The number of defined scenarios
    * @return
    */
-  final def size = this.scenarios.size
+  final def size : Int = this.scenarios.size
 
   /**
    * The amount of time given for all scenarios to execute in, other wise the
    * app will terminate the scenarios, and shut down.
    * @param totalDuration
    */
-  final def runFor(totalDuration : Duration) =  _totalDuration = totalDuration
+  final def runFor(totalDuration : Duration) : ScenarioContainer = {
+    _totalDuration = totalDuration
+    this
+  }
 
   /**
    * Passes the list of scenarios to be run
    * @param scenariosToRun
    */
-  final def withScenarios(scenariosToRun : List[Scenario]) =  _scenarios = scenariosToRun
+  final def withScenarios(scenariosToRun : Seq[Scenario]) : ScenarioContainer = {
+    _scenarios = scenariosToRun
+    this
+  }
 
   /**
    * Adds a scenario to the start of all existing scenarios to be run.  The scenarios are started
@@ -54,7 +60,10 @@ trait ScenarioContainer {
    * @param scenario
    * @return
    */
-  final def addScenario(scenario : Scenario) = scenario :: _scenarios
+  final def addScenario(scenario : Scenario) : ScenarioContainer = {
+    scenario +: _scenarios
+    this
+  }
 
   /**
    * Adds a scenario to the end of the list of existing scenarios to be run.  The scenarios are
@@ -63,10 +72,25 @@ trait ScenarioContainer {
    *
    * @param scenario Scenario to add to the end of the list of scenarios
    */
-  final def appendScenario(scenario : Scenario) = _scenarios = _scenarios :+ scenario
+  final def appendScenario(scenario : Scenario) : ScenarioContainer = {
+    _scenarios = _scenarios :+ scenario
+    this
+  }
 
 
-  final def totalDuration = _totalDuration
-  final def scenarios = _scenarios
+  final def totalDuration = {
+    _totalDuration
+  }
 
+  final def scenarios  = {
+    _scenarios
+  }
+
+}
+
+object ScenarioContainer {
+  def apply(scenarios : Scenario*) = {
+    val scenarioContainer = new Object with ScenarioContainer
+    scenarioContainer.withScenarios(scenarios)
+  }
 }

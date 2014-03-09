@@ -42,7 +42,7 @@ class ClassPathXmlApplicationContextJmsConfiguration(val scenario : Scenario) ex
 
 
   def stop() {
-    context.stop()
+    context.close()
   }
 
 

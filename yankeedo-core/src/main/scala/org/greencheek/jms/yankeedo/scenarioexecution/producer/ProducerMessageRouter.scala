@@ -19,7 +19,7 @@ import org.greencheek.jms.yankeedo.scenarioexecution.{ProducerFinished, Scenario
 import org.greencheek.jms.yankeedo.structure.scenario.Scenario
 import akka.actor.{Props, ActorRef, ActorContext}
 import java.util.concurrent.atomic.{AtomicBoolean, AtomicLong}
-import akka.routing.RoundRobinGroup
+import akka.routing.{RoundRobinRouter, RoundRobinGroup}
 import collection.JavaConversions
 import org.greencheek.jms.yankeedo.structure.actions.{JmsProducerAction => Producer}
 
@@ -37,7 +37,7 @@ class ProducerMessageRouter(scenario : Scenario,
   val stopped = new AtomicBoolean(false)
 
 
-  val router = context.actorOf(new RoundRobinGroup(JavaConversions.asJavaIterable(for (actorRef <- childrenActorRefs) yield actorRef.path.name)).props())
+  val router = context.actorOf(new RoundRobinGroup(JavaConversions.asJavaIterable(for (actorRef <- childrenActorRefs) yield actorRef.path.toString)).props())
 
   override def receive = super.receive orElse {
     case SendMessage => {
