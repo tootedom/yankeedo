@@ -15,17 +15,22 @@
  */
 package org.greencheek.jms.util
 
-import java.net.ServerSocket
+import java.net.{InetAddress, InetSocketAddress, ServerSocket}
 
 /**
  * Created by dominictootell on 09/03/2014.
  */
 object PortUtil {
 
-  def findFreePort: Int = {
-    val server: ServerSocket = new ServerSocket(0)
+  def findFreePort: ServerSocket = {
+    val server: ServerSocket = new ServerSocket(0,1,InetAddress.getLoopbackAddress())
+    server.setReuseAddress(true)
+    server
+  }
+
+  def getPort(server : ServerSocket) : Int = {
     val port: Int = server.getLocalPort
-    server.close
+    server.close()
     return port
   }
 

@@ -18,11 +18,14 @@ package org.greencheek.jms.yankeedo.scenarioexecution
 import akka.actor._
 import org.greencheek.jms.yankeedo.config.{JmsConfiguration, ClassPathXmlApplicationContextJmsConfiguration}
 import org.greencheek.jms.yankeedo.structure.scenario.Scenario
-import akka.camel.CamelExtension
+import akka.camel.{Camel, CamelExtension}
 import scala.Some
 import java.util.concurrent.atomic.{AtomicLong}
 import scala.concurrent.duration._
 import grizzled.slf4j.Logging
+import akka.camel.internal.DefaultCamel
+import scala.util.control.NonFatal
+import org.apache.camel.Component
 
 /**
  * User: dominictootell
@@ -37,7 +40,10 @@ class ScenarioExecutionMonitor(val scenario : Scenario,
     case Some(x: JmsConfiguration) => x
   }
 
-  val camelContext = CamelExtension(context.system).context
+  print("xxxxxxxxxx")
+  print(context.system)
+  val camel : Camel = CamelExtension(context.system)
+  val camelContext = camel.context
   camelContext.addComponent("jms",jmsComponent.getJmsComponent())
 
   val numberOfMessagesAttemptedProcessing = new AtomicLong(scenario.numberOfMessages)
@@ -107,20 +113,27 @@ class ScenarioExecutionMonitor(val scenario : Scenario,
   private def actorFinished() {
     debug("ExecutionMonitor for scenario is shutting down:" + scenario)
 
-    debug("Shutting down ExecutionMonitor's application context")
-    jmsComponent.stop()
-
     debug("Stopping ExecutionMonitor actor")
     context.stop(self)
 
     debug("Stopping ExecutionMonitor's camel context")
     try {
-      camelContext.shutdown()
+//      val c : Component = camelContext.removeComponent("jms")
+//      try camelContext.stop() finally {
+//        try camel.template.stop() catch { case NonFatal(e) ⇒ debug("Swallowing non-fatal exception [{}] on stopping Camel producer template", e) }
+//      }
+//      debug("Stopped CamelContext[{}] for ActorSystem[{}]", camelContext.getName, context.system.name)
+//      System.out.println("==============------------==============")
+////      System.out.println(c)
+//      System.out.println(camelContext)
+//      System.out.println("==============------------==============")
     } catch {
       case e : Exception => {}
     }
 
 
+    debug("Shutting down ExecutionMonitor's application context" + jmsComponent)
+    jmsComponent.stop()
 
 
   }
