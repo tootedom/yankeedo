@@ -98,12 +98,18 @@ class AkkaConsumer(val jmsAction : JmsCons,
           }
         }
 
+
+
+        if (consumeMessage) {
+          sender ! Ack
+        }
+        else {
+          sender ! Failure(exception.get)
+        }
+
         if (sharedMessageNumber <= 0) {
           stop
         }
-
-        if (consumeMessage) sender ! Ack
-        else sender ! Failure(exception.get)
       }
     }
     case _ => {
