@@ -23,9 +23,8 @@ import scala.Some
 import java.util.concurrent.atomic.{AtomicLong}
 import scala.concurrent.duration._
 import grizzled.slf4j.Logging
-import akka.camel.internal.DefaultCamel
-import scala.util.control.NonFatal
-import org.apache.camel.Component
+import org.apache.camel.impl.{DefaultCamelContext, DefaultShutdownStrategy}
+import java.util.concurrent.TimeUnit
 
 /**
  * User: dominictootell
@@ -40,11 +39,10 @@ class ScenarioExecutionMonitor(val scenario : Scenario,
     case Some(x: JmsConfiguration) => x
   }
 
-  print("xxxxxxxxxx")
-  print(context.system)
+
   val camel : Camel = CamelExtension(context.system)
   val camelContext = camel.context
-  camelContext.addComponent("jms",jmsComponent.getJmsComponent())
+  val shutdownStrategy = setupCamelContext(camelContext,jmsComponent)
 
   val numberOfMessagesAttemptedProcessing = new AtomicLong(scenario.numberOfMessages)
 
@@ -67,6 +65,20 @@ class ScenarioExecutionMonitor(val scenario : Scenario,
     }
   }
 
+  private def setupCamelContext(camelContext : DefaultCamelContext,
+                                jmsConfiguration : JmsConfiguration) : DefaultShutdownStrategy = {
+    this.synchronized {
+      val shutdownStrategy = new DefaultShutdownStrategy()
+      shutdownStrategy.setTimeout(1)
+      shutdownStrategy.setTimeUnit(TimeUnit.SECONDS)
+      shutdownStrategy.setCamelContext(camelContext)
+      camelContext.getExecutorServiceManager.setShutdownAwaitTermination(1000)
+      camelContext.setShutdownStrategy(shutdownStrategy)
+      camelContext.addComponent("jms",jmsComponent.getJmsComponent())
+
+      shutdownStrategy
+    }
+  }
 
 
   override def receive = {
