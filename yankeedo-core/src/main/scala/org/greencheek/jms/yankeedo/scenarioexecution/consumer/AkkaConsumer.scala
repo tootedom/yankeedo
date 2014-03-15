@@ -52,8 +52,10 @@ class AkkaConsumer(val jmsAction : JmsCons,
       // still has the message, and waits a while to stop.
       // so we just mark the consumer via the stopped.  And fail any incoming messages
 //      context.stop(self)
-      markStopped
-      context.parent ! ConsumerFinished
+      if(!stopped.get()) {
+        markStopped
+        context.parent ! ConsumerFinished
+      }
     } finally {
     }
   }

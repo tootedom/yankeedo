@@ -106,6 +106,7 @@ class ScenarioExecutionMonitor(val scenario : Scenario,
   }
 
   private def stopChildren() : Unit = {
+    debug("Stopping scenario's children")
     for (child : ActorRef <- childrenActorRefs) context.stop(child)
   }
 
@@ -113,29 +114,11 @@ class ScenarioExecutionMonitor(val scenario : Scenario,
   private def actorFinished() {
     debug("ExecutionMonitor for scenario is shutting down:" + scenario)
 
-    debug("Stopping ExecutionMonitor actor")
-    context.stop(self)
-
-    debug("Stopping ExecutionMonitor's camel context")
-    try {
-//      val c : Component = camelContext.removeComponent("jms")
-//      try camelContext.stop() finally {
-//        try camel.template.stop() catch { case NonFatal(e) ⇒ debug("Swallowing non-fatal exception [{}] on stopping Camel producer template", e) }
-//      }
-//      debug("Stopped CamelContext[{}] for ActorSystem[{}]", camelContext.getName, context.system.name)
-//      System.out.println("==============------------==============")
-////      System.out.println(c)
-//      System.out.println(camelContext)
-//      System.out.println("==============------------==============")
-    } catch {
-      case e : Exception => {}
-    }
-
-
     debug("Shutting down ExecutionMonitor's application context" + jmsComponent)
     jmsComponent.stop()
 
-
+    debug("Stopping ExecutionMonitor actor")
+    context.stop(self)
   }
 
   private def notifyParentScenarioHasFinished() {

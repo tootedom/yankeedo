@@ -49,20 +49,20 @@
     </bean>
 
 
-    <!--<bean id="cachingConnectionFactory"-->
-          <!--class="org.springframework.jms.connection.CachingConnectionFactory" destroy-method="resetConnection">-->
-        <!--<property name="targetConnectionFactory" ref="amqConnectionFactory"></property>-->
-        <!--<property name="cacheConsumers" value="true"></property>-->
-        <!--<property name="cacheProducers" value="true"></property>-->
-        <!--<property name="reconnectOnException" value="true"></property>-->
-        <!--<property name="sessionCacheSize" value="${jms.sessioncachesize:10}"></property>-->
-    <!--</bean>-->
-
-    <bean id="cachingConnectionFactory" class="org.apache.activemq.pool.PooledConnectionFactory">
-        <property name="maxConnections" value="8"/>
-        <property name="maximumActiveSessionPerConnection" value="500"/>
-        <property name="connectionFactory" ref="amqConnectionFactory"/>
+    <bean id="cachingConnectionFactory"
+          class="org.springframework.jms.connection.CachingConnectionFactory">
+        <property name="targetConnectionFactory" ref="amqConnectionFactory"></property>
+        <property name="cacheConsumers" value="true"></property>
+        <property name="cacheProducers" value="true"></property>
+        <property name="reconnectOnException" value="true"></property>
+        <property name="sessionCacheSize" value="${jms.sessioncachesize:10}"></property>
     </bean>
+
+    <!--<bean id="cachingConnectionFactory" class="org.apache.activemq.pool.PooledConnectionFactory">-->
+        <!--<property name="maxConnections" value="8"/>-->
+        <!--<property name="maximumActiveSessionPerConnection" value="500"/>-->
+        <!--<property name="connectionFactory" ref="amqConnectionFactory"/>-->
+    <!--</bean>-->
 
     <bean id="jmsConfig" class="org.apache.camel.component.jms.JmsConfiguration">
         <property name="connectionFactory" ref="cachingConnectionFactory" />

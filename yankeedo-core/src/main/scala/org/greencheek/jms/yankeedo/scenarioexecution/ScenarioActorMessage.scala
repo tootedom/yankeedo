@@ -17,6 +17,7 @@ package org.greencheek.jms.yankeedo.scenarioexecution
 
 import concurrent.duration.Duration
 import org.greencheek.jms.yankeedo.structure.scenario.Scenario
+import akka.actor.ActorSystem
 
 /**
  * User: dominictootell
@@ -31,4 +32,6 @@ case object ScenarioStart extends ScenarioActorMessage
 case class ScenarioExecutionMonitorRunDurationFinished(val durationThatExpired : Duration) extends ScenarioActorMessage("Run For Duration Expired: " + durationThatExpired)
 case class ScenarioExecutionFinished(val scenario : Scenario) extends ScenarioActorMessage
 case object StartExecutingScenarios extends ScenarioActorMessage
+case object ReturnScenarioActorSystems extends ScenarioActorMessage
+case class ScenarioActorSystems(val actorSystems : List[ActorSystem])
 case class TerminateExecutingScenariosDurationEnd(val durationThatExpired : Duration) extends ScenarioActorMessage("All Scenarios run for duration, that has now expired: " + durationThatExpired)

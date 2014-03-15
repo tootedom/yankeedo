@@ -213,7 +213,7 @@ class DirectoryBasedMessageSourceSpec extends Specification {
       val directorySourceSortByLargest = new DirectoryBasedMessageSource(path = testDirectoryPath,
         filter = Some(_.extension.matches("jpg")),
         sortOrder = DirectoryBasedMessageSource.SORT_BY_FILE_LENGTH_LARGEST_FIRST,
-        sendFilesAsBytes = false, messageHeaders = Some( (file:File) => {
+        sendFilesAsBytes = true, messageHeaders = Some( (file:File) => {
           Map( "FileName" -> file.name, "Last-Modified" -> file.lastModified, "FileLength" -> file.length)
         }))
 
@@ -226,7 +226,7 @@ class DirectoryBasedMessageSourceSpec extends Specification {
       val directorySourceSortBySmallest = new DirectoryBasedMessageSource(path = testDirectoryPath,
         filter = Some(_.extension.matches("jpg")),
         sortOrder = DirectoryBasedMessageSource.SORT_BY_FILE_LENGTH_SMALLEST_FIRST,
-        sendFilesAsBytes = false, messageHeaders = Some( (file:File) => {
+        sendFilesAsBytes = true, messageHeaders = Some( (file:File) => {
           Map( "FileName" -> file.name, "Last-Modified" -> file.lastModified, "FileLength" -> file.length)
         }))
 

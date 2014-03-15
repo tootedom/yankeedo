@@ -18,7 +18,7 @@ package org.greencheek.jms.yankeedo.scenarioexecution
 import akka.actor._
 import consumer.ConsumerExecutor
 import org.greencheek.jms.yankeedo.structure.scenario.{ScenarioContainer}
-import java.util.concurrent.{ExecutorService, Executors, CountDownLatch}
+import java.util.concurrent.{CountDownLatch}
 import org.greencheek.jms.yankeedo.structure.actions.{JmsProducerAction, JmsConsumerAction}
 import collection.mutable.ArrayBuffer
 import java.util.concurrent.atomic.AtomicLong
@@ -27,7 +27,6 @@ import producer.ProducerExecutor
 import scala.Some
 import concurrent.duration.FiniteDuration
 import grizzled.slf4j.Logging
-import scala.concurrent.ExecutionContext
 
 /**
  * User: dominictootell
@@ -39,31 +38,13 @@ class ScenariosExecutionManager(val applicationLatch : CountDownLatch,
 
   val scenariosRunning = new AtomicLong(scenarioContainer.size)
 
-//  val executors : List[ExecutorService] = {
-//    val ecs = ArrayBuffer[ExecutorService]()
-//    for(s <- scenarioContainer.scenarios) {
-//      ecs += Executors.newFixedThreadPool(2)
-//    }
-//
-//    ecs.toList
-//  }
-//
-//  val executionContexts : List[ExecutionContext] = {
-//    val ecs = ArrayBuffer[ExecutionContext]()
-//
-//    for(e <- executors) {
-//      ecs += ExecutionContext.fromExecutorService(e)
-//    }
-//
-//    ecs.toList
-//  }
+
 
   val scenarioSystems : List[ActorSystem] = {
     val systems = ArrayBuffer[ActorSystem]()
 
-    for ((_,scenarioNumber) <- scenarioContainer.scenarios.zipWithIndex) {
-//      systems += ActorSystem("scenario-" + scenarioNumber,None,None,Some(executionContexts(scenarioNumber)))
-      systems += ActorSystem("scenario-" + scenarioNumber)
+    for ((senario,scenarioNumber) <- scenarioContainer.scenarios.zipWithIndex) {
+      systems += ActorSystem("scenariosystem-" + scenarioNumber)
     }
 
     systems.toList
@@ -107,6 +88,9 @@ class ScenariosExecutionManager(val applicationLatch : CountDownLatch,
       info("All Scenarios totalDuration has been reached.  Stopping all scenarios.")
       stopExecution
     }
+    case ReturnScenarioActorSystems => {
+      sender ! ScenarioActorSystems(scenarioSystems)
+    }
   }
 
 
@@ -121,20 +105,15 @@ class ScenariosExecutionManager(val applicationLatch : CountDownLatch,
 
 
     for (system <- scenarioSystems) {
-      println("*****************")
-
-      println("HASH CODE: " + Integer.toHexString(system.dispatcher.hashCode()))
-      println("*****************")
-      system.shutdown()
-      system.awaitTermination()
+      try {
+        system.shutdown()
+        system.awaitTermination()
+      } catch {
+        case  e: Exception => {
+          warn("Unable to stop scenario actor system:" + system.name)
+        }
+      }
     }
-
-//    for (ec <- executors) {
-//      print("0--09-09-09")
-//      print(ec.shutdownNow())
-//      print("0--09-09-09")
-//    }
-
 
     context.stop(self)
 

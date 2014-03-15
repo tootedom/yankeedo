@@ -67,6 +67,9 @@ object Dsl {
     def until_no_of_messages_sent(number: Int): ScenarioWithUrlAndName = new NamedScenarioWithUrl {
       def scenario = namedScenario.scenario.runForMessages(number)
     }
+    def until_no_of_messages_consumed(number: Int): ScenarioWithUrlAndName = new NamedScenarioWithUrl {
+      def scenario = namedScenario.scenario.runForMessages(number)
+    }
     def with_no_of_actors(number : Int ) : ScenarioWithUrlAndName = new NamedScenarioWithUrl {
       def scenario: Dsl.ScenarioWithoutAction = namedScenario.scenario.runWithConcurrency(number)
     }

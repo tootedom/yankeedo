@@ -17,7 +17,7 @@ package org.greencheek.jms.yankeedo.structure.scenario
 
 import java.util.concurrent._
 import akka.actor.{ActorRef, Props, ActorSystem}
-import org.greencheek.jms.yankeedo.scenarioexecution.{StartExecutingScenarios, ScenariosExecutionManager}
+import org.greencheek.jms.yankeedo.scenarioexecution.{ScenarioActorSystems, ReturnScenarioActorSystems, StartExecutingScenarios, ScenariosExecutionManager}
 import scala.concurrent.duration._
 import org.specs2.mutable.Specification
 import org.apache.activemq.broker.{TransportConnector, BrokerFactory, BrokerService}
@@ -36,6 +36,7 @@ import java.util.concurrent.atomic.AtomicInteger
 import java.util
 import akka.dispatch.Dispatchers
 import scala.Some
+import akka.pattern.ask
 import java.util.concurrent.TimeUnit
 import org.apache.activemq.broker.region.{DestinationStatistics, Destination}
 import org.apache.activemq.command.ActiveMQDestination
@@ -48,96 +49,12 @@ import scala.collection.JavaConversions._
  */
 @RunWith(classOf[JUnitRunner])
 class TestProducerScenarioSpec extends BrokerBasedSpec {
-//  sequential
 
 
-  val myContext = withActorSystem();
-
-  //    step()
-  case class withActorSystem() extends BeforeAfter {
-    val int : AtomicInteger = new AtomicInteger(0)
-    @volatile var latch : CountDownLatch = null
-    @volatile var actorSystem : ActorSystem = null
-
-    def before = {
-      latch = new CountDownLatch(1)
-      actorSystem = ActorSystem("TestSystem"+int.incrementAndGet())
-    }
-    def after = {
-      try {
-        actorSystem.shutdown()
-        actorSystem.awaitTermination()
-      } catch {
-        case e : Exception => {
-
-        }
-      }
-    }
-  }
-
-
-  def getDestinationStatsForDestination(destinations : JMap[ActiveMQDestination,Destination],
-                                        destinationName : String,
-                                        filter : ((ActiveMQDestination) => Boolean)) : Option[DestinationStatistics] = {
-
-    for(dest : ActiveMQDestination <- destinations.keySet().toList) {
-      if(filter(dest)) {
-        if(dest.getPhysicalName.equals(destinationName)) {
-          return Some(destinations.get(dest).getDestinationStatistics)
-        }
-      }
-    }
-    None
-  }
-
-  def getDestinationStatsForTopicDestination(destinations : JMap[ActiveMQDestination,Destination],
-                                             destinationName : String) : Option[DestinationStatistics] = {
-    getDestinationStatsForDestination(destinations,destinationName,{dest : ActiveMQDestination => dest.isTopic})
-  }
-
-  def getDestinationStatsForQueueDestination(destinations : JMap[ActiveMQDestination,Destination],
-                                             destinationName : String) : Option[DestinationStatistics] = {
-    getDestinationStatsForDestination(destinations,destinationName,{dest : ActiveMQDestination => dest.isQueue})
-  }
-
-  def getCountForDestination(destinations : JMap[ActiveMQDestination,Destination],
-                             destinationName : String,
-                             destinationFilter : (JMap[ActiveMQDestination,Destination], String) => Option[DestinationStatistics],
-                             counterFuction : (DestinationStatistics) => Long ) : Long = {
-    destinationFilter(destinations,destinationName) match {
-      case None => 0
-      case Some(d) => {
-        counterFuction(d)
-      }
-    }
-  }
-
-
-  def getMessageCountForQueueDestination(destinations : JMap[ActiveMQDestination,Destination],
-                                         destinationName : String) : Long = {
-    getCountForDestination(destinations,destinationName,getDestinationStatsForQueueDestination(_,_),{ stat : DestinationStatistics => stat.getMessages.getCount})
-  }
-
-  def getProducerCountForQueueDestination(destinations : JMap[ActiveMQDestination,Destination],
-                                         destinationName : String) : Long = {
-    getCountForDestination(destinations,destinationName,getDestinationStatsForQueueDestination(_,_),{ stat : DestinationStatistics => stat.getProducers.getCount})
-  }
-
-  def getMessageCountForTopicDestination(destinations : JMap[ActiveMQDestination,Destination],
-                                         destinationName : String) : Long = {
-    getCountForDestination(destinations,destinationName,getDestinationStatsForTopicDestination(_,_),{ stat : DestinationStatistics => stat.getMessages.getCount})
-  }
-
-  def getProducerCountForTopicDestination(destinations : JMap[ActiveMQDestination,Destination],
-                                          destinationName : String) : Long = {
-
-    getCountForDestination(destinations,destinationName,getDestinationStatsForTopicDestination(_,_),{ stat : DestinationStatistics => stat.getProducers.getCount})
-  }
+  val myContext = WithActorSystem();
 
 
   "Producing messages" >> {
-//    sequential
-//
     "terminate after 10 messages" in myContext {
       val appLatch = myContext.latch
       val actorSystem = myContext.actorSystem
@@ -214,13 +131,6 @@ class TestProducerScenarioSpec extends BrokerBasedSpec {
       getMessageCountForQueueDestination(map,"my2secondqueue") should be greaterThan(1)
       getProducerCountForQueueDestination(map,"my2secondqueue") should beEqualTo(0)
 
-//      myContext.broker.getAdminView.getTotalMessageCount should be greaterThan(1)
-//      System.out.println("count" + myContext.broker.getAdminView.getTotalMessageCount )
-//      myContext.broker.getAdminView.getQueues.filter(name => name.toString.contains("my2secondqueue")).size should be greaterThan(0)
-//      myContext.broker.getAdminView.getTotalProducerCount should beEqualTo(0)
-
-
-
     }
 
 
@@ -261,10 +171,6 @@ class TestProducerScenarioSpec extends BrokerBasedSpec {
       getMessageCountForQueueDestination(map,"delayedqueue") should be lessThan(10)
       getProducerCountForQueueDestination(map,"delayedqueue") should beEqualTo(0)
 
-//      myContext.broker.getAdminView.getTotalMessageCount should be greaterThan(1)
-//      myContext.broker.getAdminView.getTotalMessageCount should be lessThan(10)
-//      myContext.broker.getAdminView.getQueues.filter(name => name.toString.contains("delayedqueue")).size should be greaterThan(0)
-//      myContext.broker.getAdminView.getTotalProducerCount should beEqualTo(0)
     }
 
     "send messages over a number of actors" in myContext {
@@ -283,25 +189,34 @@ class TestProducerScenarioSpec extends BrokerBasedSpec {
 
 
       val scenarioExecutor : ActorRef =  actorSystem.actorOf(Props(new ScenariosExecutionManager(appLatch,ScenarioContainer(scenario))),"system")
+
+      implicit val timeout = Timeout(2,SECONDS)
+      val future = scenarioExecutor ? ReturnScenarioActorSystems
+      val result = Await.result(future, timeout.duration).asInstanceOf[ScenarioActorSystems]
+
+      result should not beNull
+      val actorSystemSize = result.actorSystems.size
+      actorSystemSize should beEqualTo(1)
+
+      val scenariosActorSystem : ActorSystem =result.actorSystems(0)
+
+
       scenarioExecutor ! StartExecutingScenarios
 
       Thread.sleep(1000)
 
-//      myContext.broker.getAdminView.getTotalProducerCount should beEqualTo(1)
 
-//      val ref1 = Await.result(myContext.actorSystem.actorSelection("akka://system"+myContext.currentId+"/user/system/ProducerExecutor/producermonitor/ProducerActor1").resolveOne()(Timeout.durationToTimeout(Duration(1,SECONDS))).mapTo[ActorRef],Duration.Inf)
-//      val ref2 = Await.result(myContext.actorSystem.actorSelection("akka://system"+myContext.currentId+"/user/system/ProducerExecutor/producermonitor/ProducerActor2").resolveOne()(Timeout.durationToTimeout(Duration(1,SECONDS))).mapTo[ActorRef],Duration.Inf)
-//      val ref3 = Await.result(myContext.actorSystem.actorSelection("akka://system"+myContext.currentId+"/user/system/ProducerExecutor/producermonitor/ProducerActor3").resolveOne()(Timeout.durationToTimeout(Duration(1,SECONDS))).mapTo[ActorRef],Duration.Inf)
-//      val ref4 = Await.result(myContext.actorSystem.actorSelection("akka://system"+myContext.currentId+"/user/system/ProducerExecutor/producermonitor/ProducerActor4").resolveOne()(Timeout.durationToTimeout(Duration(1,SECONDS))).mapTo[ActorRef],Duration.Inf)
-//
-//
-//
-//      ref1 should not beTheSameAs(ref2)
-//      ref1 should not beTheSameAs(ref3)
-//      ref1 should not beTheSameAs(ref4)
-//      ref2 should not beTheSameAs(ref3)
-//      ref2 should not beTheSameAs(ref4)
-//      ref4 should not beTheSameAs(ref3)
+      val ref1 = Await.result(scenariosActorSystem.actorSelection("akka://scenariosystem-0/user/ProducerExecutor/producermonitor/ProducerActor1").resolveOne()(Timeout.durationToTimeout(Duration(1,SECONDS))).mapTo[ActorRef],Duration.Inf)
+      val ref2 = Await.result(scenariosActorSystem.actorSelection("akka://scenariosystem-0/user/ProducerExecutor/producermonitor/ProducerActor2").resolveOne()(Timeout.durationToTimeout(Duration(1,SECONDS))).mapTo[ActorRef],Duration.Inf)
+      val ref3 = Await.result(scenariosActorSystem.actorSelection("akka://scenariosystem-0/user/ProducerExecutor/producermonitor/ProducerActor3").resolveOne()(Timeout.durationToTimeout(Duration(1,SECONDS))).mapTo[ActorRef],Duration.Inf)
+      val ref4 = Await.result(scenariosActorSystem.actorSelection("akka://scenariosystem-0/user/ProducerExecutor/producermonitor/ProducerActor4").resolveOne()(Timeout.durationToTimeout(Duration(1,SECONDS))).mapTo[ActorRef],Duration.Inf)
+
+      ref1 should not beTheSameAs(ref2)
+      ref1 should not beTheSameAs(ref3)
+      ref1 should not beTheSameAs(ref4)
+      ref2 should not beTheSameAs(ref3)
+      ref2 should not beTheSameAs(ref4)
+      ref4 should not beTheSameAs(ref3)
 
 
       val start : Long = System.currentTimeMillis()
@@ -321,12 +236,6 @@ class TestProducerScenarioSpec extends BrokerBasedSpec {
       val map = broker.getBroker.getDestinationMap()
       getMessageCountForQueueDestination(map,"loadbalancedactors") should be greaterThan(1)
       getProducerCountForQueueDestination(map,"loadbalancedactors") should beEqualTo(0)
-//
-//      myContext.broker.getAdminView.getTotalMessageCount should be greaterThan(1)
-//      myContext.broker.getAdminView.getQueues.filter(name => name.toString.contains("loadbalancedactors")).size should be greaterThan(0)
-//      myContext.broker.getAdminView.getTotalProducerCount should beEqualTo(0)
-
-
 
     }
 
@@ -366,71 +275,8 @@ class TestProducerScenarioSpec extends BrokerBasedSpec {
       getMessageCountForTopicDestination(map,"delayedtopic") should beEqualTo(0)
       getProducerCountForTopicDestination(map,"delayedtopic") should beEqualTo(0)
 
-//      myContext.broker.getAdminView.getTotalMessageCount should beEqualTo(0)
-//      myContext.broker.getAdminView.getTopics.filter(name => name.toString.contains("destinationName=delayedtopic")).size should beEqualTo(1)
-//      myContext.broker.getAdminView.getTotalProducerCount should beEqualTo(0)
     }
   }
 
 }
 
-
-trait BrokerBasedSpec extends Specification {
-  import org.specs2._
-  import specification._
-
-  @volatile var broker : BrokerService = null
-  @volatile var portServerSocket : ServerSocket = null
-  @volatile var port : Int = -1
-  @volatile var es : ExecutorService = null
-
-  /** the map method allows to "post-process" the fragments after their creation */
-  override def map(fs: =>Fragments) = Step(startBroker) ^ fs ^ Step(stopBroker)
-
-  def startBroker() = {
-    {
-      portServerSocket = PortUtil.findFreePort
-      port = PortUtil.getPort(portServerSocket)
-      println("==========")
-      println("PORT:" + port)
-      println("==========")
-      broker = new BrokerService()
-      broker.setBrokerName("localbroker")
-      broker.setPersistent(false)
-      broker.setUseJmx(false)
-      //      val mctx = new ManagementContext(java.lang.management.ManagementFactory.getPlatformMBeanServer)
-      //      mctx.setCreateMBeanServer(false)
-      //      mctx.setRmiServerPort(jmxport)
-      //      mctx.setConnectorPort(jmxport)
-      //      mctx.setCreateConnector(false)
-      //      mctx.setUseMBeanServer(false)
-      //      mctx.setFindTigerMbeanServer(false)
-      ////      mctx.start()
-      //      broker.setManagementContext(mctx)
-      //      broker.set
-      broker.setPersistenceAdapter(new MemoryPersistenceAdapter())
-      broker.addConnector("tcp://localhost:" + port);
-
-      broker.setTmpDataDirectory(null)
-      broker.setStartAsync(false)
-      broker.setUseShutdownHook(false)
-      broker.setUseVirtualTopics(false)
-      broker.setAdvisorySupport(false)
-      broker.setSchedulerSupport(false)
-      broker.setDedicatedTaskRunner(false)
-      //      broker.getBroker().start()
-      broker.start()
-      broker.waitUntilStarted()
-
-      //      ,None,None,Some(ExecutionContext.fromExecutorService(es)))
-
-
-    }
-  }
-
-  def stopBroker = {
-      broker.stop()
-      broker.waitUntilStopped()
-    }
-
-}
