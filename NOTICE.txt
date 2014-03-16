@@ -1,0 +1,17 @@
+Relateit
+Copyright 2013-2014 Relateit
+
+This product includes software developed by The Apache Software
+Foundation (http://www.apache.org/).
+
+Grizzled-sl4j is distributed under BSD license
+https://github.com/bmc/grizzled-slf4j/blob/master/LICENSE.md
+
+logback is under GNU GPL2
+https://github.com/qos-ch/logback/blob/master/LICENSE.txt
+
+scopt is under a MIT license
+https://github.com/scopt/scopt
+
+scala is distributed under its own license
+http://www.scala-lang.org/license.html
