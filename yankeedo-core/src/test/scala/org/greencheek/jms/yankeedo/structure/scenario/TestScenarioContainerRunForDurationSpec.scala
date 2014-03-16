@@ -24,9 +24,9 @@ import akka.util.Timeout
 import scala.concurrent.duration._
 import scala.concurrent.Await
 import java.util.concurrent.TimeUnit
-import org.greencheek.jms.yankeedo.consumer.messageprocessor.CamelMessageProcessor
 import akka.camel.CamelMessage
 import akka.pattern.ask
+import org.greencheek.jms.yankeedo.consumer.scenarioexecution.messageprocessor.CamelMessageProcessor
 
 /**
  * Created by dominictootell on 16/03/2014.
@@ -93,7 +93,7 @@ class TestScenarioContainerRunForDurationSpec extends BrokerBasedSpec {
 
   }
 
-  class MessagePersistentChecker extends CamelMessageProcessor{
+  class MessagePersistentChecker extends CamelMessageProcessor {
     @volatile var _numberOfPersistentMessages : Int = 0
 
     def process(message: CamelMessage) {

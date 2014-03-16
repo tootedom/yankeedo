@@ -21,9 +21,9 @@ import akka.camel.Ack
 import java.util.concurrent.atomic.{AtomicBoolean, AtomicLong}
 import org.greencheek.jms.yankeedo.structure.actions.{JmsConsumerAction => JmsCons, DurableTopic, Queue, Topic}
 import org.greencheek.jms.yankeedo.scenarioexecution.ConsumerFinished
-import org.greencheek.jms.yankeedo.consumer.messageprocessor.CamelMessageProcessor
 import scala.concurrent.duration.{Duration, FiniteDuration}
 import scala.concurrent.duration.SECONDS
+import org.greencheek.jms.yankeedo.consumer.scenarioexecution.messageprocessor.CamelMessageProcessor
 
 /**
  * User: dominictootell

@@ -20,8 +20,8 @@ import org.greencheek.jms.yankeedo.structure.scenario.{ScenarioBuilder => Builde
 import org.greencheek.jms.yankeedo.structure.RequiredParameter._
 import scala.concurrent.duration._
 import org.greencheek.jms.yankeedo.structure.actions._
-import org.greencheek.jms.yankeedo.consumer.messageprocessor.CamelMessageProcessor
 import org.greencheek.jms.yankeedo.scenarioexecution.producer.message.CamelMessageSource
+import org.greencheek.jms.yankeedo.consumer.scenarioexecution.messageprocessor.CamelMessageProcessor
 
 /**
  * User: dominictootell

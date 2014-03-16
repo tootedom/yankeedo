@@ -26,10 +26,10 @@ import scala.concurrent.duration._
 import akka.pattern.ask
 import scala.concurrent.Await
 import java.util.concurrent.{CountDownLatch, TimeUnit}
-import org.greencheek.jms.yankeedo.consumer.messageprocessor.CamelMessageProcessor
 import akka.camel.CamelMessage
 import org.apache.activemq.broker.region.{Subscription, DestinationStatistics}
 import org.apache.activemq.command.ActiveMQDestination
+import org.greencheek.jms.yankeedo.consumer.scenarioexecution.messageprocessor.CamelMessageProcessor
 
 /**
  * Created by dominictootell on 15/03/2014.

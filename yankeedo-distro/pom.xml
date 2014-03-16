@@ -20,6 +20,11 @@
 			<artifactId>yankeedo-app</artifactId>
             <version>${project.version}</version>
 		</dependency>
+        <dependency>
+            <groupId>org.greencheek.mq</groupId>
+            <artifactId>yankeedo-messagesources</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 	</dependencies>
 
 	<build>

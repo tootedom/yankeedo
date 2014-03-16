@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.greencheek.jms.yankeedo.consumer.messageprocessor
+package org.greencheek.jms.yankeedo.consumer.scenarioexecution.messageprocessor
 
 import akka.camel.CamelMessage
 

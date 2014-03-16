@@ -23,9 +23,9 @@ import scala.concurrent.duration._
 import org.greencheek.jms.yankeedo.structure.dsl.Dsl._
 import org.greencheek.jms.yankeedo.structure.scenario.Scenario
 import org.greencheek.jms.yankeedo.structure.actions.{Queue, DurableTopic, JmsConsumerAction, JmsProducerAction}
-import org.greencheek.jms.yankeedo.consumer.messageprocessor.SystemOutToStringCamelMessageProcess
 import org.greencheek.jms.yankeedo.scenarioexecution.producer.message.CamelMessageSource
 import akka.camel.CamelMessage
+import org.greencheek.jms.yankeedo.consumer.scenarioexecution.messageprocessor.SystemOutToStringCamelMessageProcessor
 
 /**
  * User: dominictootell
@@ -109,13 +109,13 @@ class DslSpec extends Specification{
       scenario.jmsAction.asInstanceOf[JmsConsumerAction].prefetch must be equalTo 10
     }
     "When a consumer action is specified that a prefetch, number of consumers and message processor can be specified " in {
-      var messageProcessor = new SystemOutToStringCamelMessageProcess
+      var messageProcessor = SystemOutToStringCamelMessageProcessor
 
       var scenario = createScenario(
         "ScenarioName" connect_to "localhost:1111"
           consume from queue "dom"
           prefetch 10
-          with_message_consumer new SystemOutToStringCamelMessageProcess
+          with_message_consumer SystemOutToStringCamelMessageProcessor
           number_of_consumers 10
       )
 
@@ -128,7 +128,7 @@ class DslSpec extends Specification{
       scenario = createScenario(
         "ScenarioName" connect_to "localhost:1111"
           consume from queue "dom"
-          with_message_consumer new SystemOutToStringCamelMessageProcess
+          with_message_consumer SystemOutToStringCamelMessageProcessor
           prefetch 10
           number_of_consumers 10
       )

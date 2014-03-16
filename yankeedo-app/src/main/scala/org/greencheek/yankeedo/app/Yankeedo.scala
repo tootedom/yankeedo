@@ -29,6 +29,7 @@ import org.greencheek.jms.yankeedo.scenarioexecution.{StartExecutingScenarios, S
 import java.io.{File => JFile}
 import java.net.URLClassLoader
 import com.typesafe.config.ConfigFactory
+import org.greencheek.jms.yankeedo.app.ScenarioContainerExecutor
 
 /**
  * User: dominictootell
@@ -42,7 +43,6 @@ object Yankeedo extends App with Logging {
   val FINISHED = 0;
   val SCENARIO_TIMEOUT = 1;
   val NO_SCENARIOS_FOUND = 2;
-
 
   sys.exit(runYankeedo(args))
 
@@ -118,19 +118,7 @@ object Yankeedo extends App with Logging {
 
   private def runScenario(scenario : ScenarioContainer) : Int = {
 
-
-    val appLatch = new CountDownLatch(1)
-    val actorSystem = ActorSystem()
-
-    val scenarioExecutor = actorSystem.actorOf(Props(new ScenariosExecutionManager(appLatch,scenario)))
-
-    scenarioExecutor ! StartExecutingScenarios
-
-    appLatch.await()
-
-    actorSystem.shutdown()
-
-    FINISHED
+    ScenarioContainerExecutor.executeScenarios(scenario)
   }
 
   private def defaultOutputDirectoryBaseName(clazz: Class[ScenarioContainer]) = clazz.getSimpleName
@@ -152,9 +140,6 @@ object Yankeedo extends App with Logging {
         // If there is no simulation file
         info("There is no scenario script. Please check that your scripts are in " + runtimeConfig.sourcesDirectory)
         sys.exit
-      case 1 =>
-        info(simulations.head.getName + " is the only available scenario, executing it.")
-        0
       case size =>
         println("Choose a scenario number to run:")
         for ((simulation, index) <- simulations.zipWithIndex) {

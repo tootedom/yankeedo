@@ -23,10 +23,10 @@ import akka.pattern.ask
 import scala.concurrent.duration._
 import scala.concurrent.Await
 import java.util.concurrent.TimeUnit
-import org.greencheek.jms.yankeedo.consumer.messageprocessor.CamelMessageProcessor
 import akka.camel.CamelMessage
 import org.specs2.runner.JUnitRunner
 import org.junit.runner.RunWith
+import org.greencheek.jms.yankeedo.consumer.scenarioexecution.messageprocessor.CamelMessageProcessor
 
 /**
  * Created by dominictootell on 15/03/2014.
@@ -101,7 +101,7 @@ class TestMessageProcessorExceptionHandlingSpec extends BrokerBasedSpec {
 
 
 
-  class MessageProcessorThrowingException(val consumeOnException : Boolean = true) extends CamelMessageProcessor{
+  class MessageProcessorThrowingException(val consumeOnException : Boolean = true) extends CamelMessageProcessor {
     @volatile var _numberOfMessagesProcessed : Int = 0
 
     def process(message: CamelMessage) {

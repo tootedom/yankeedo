@@ -15,7 +15,8 @@
  */
 package org.greencheek.jms.yankeedo.structure.actions
 
-import org.greencheek.jms.yankeedo.consumer.messageprocessor.{SystemOutToStringCamelMessageProcess, CamelMessageProcessor}
+import org.greencheek.jms.yankeedo.consumer.scenarioexecution.messageprocessor.{SystemOutToStringCamelMessageProcessor, CamelMessageProcessor}
+
 
 /**
  * User: dominictootell
@@ -25,7 +26,7 @@ import org.greencheek.jms.yankeedo.consumer.messageprocessor.{SystemOutToStringC
 object JmsConsumerAction {
   val DEFULAT_NUMBER_OF_CONSUMERS = 1
   val DEFAULT_PREFETCH = 1
-  final def DEFAULT_MESSAGE_PROCESSOR = new SystemOutToStringCamelMessageProcess
+  final def DEFAULT_MESSAGE_PROCESSOR = SystemOutToStringCamelMessageProcessor
 }
 
 class JmsConsumerAction(val destination: JmsDestination,

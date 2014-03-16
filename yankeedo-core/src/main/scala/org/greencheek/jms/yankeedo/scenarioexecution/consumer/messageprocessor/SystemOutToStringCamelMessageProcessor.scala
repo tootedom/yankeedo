@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.greencheek.jms.yankeedo.consumer.messageprocessor
+package org.greencheek.jms.yankeedo.consumer.scenarioexecution.messageprocessor
 
 import akka.camel.CamelMessage
 
@@ -22,7 +22,7 @@ import akka.camel.CamelMessage
  * Date: 06/01/2013
  * Time: 17:38
  */
-class SystemOutToStringCamelMessageProcess extends CamelMessageProcessor{
+object SystemOutToStringCamelMessageProcessor extends CamelMessageProcessor{
   def process(message: CamelMessage) {
     println(message)
   }
