@@ -21,7 +21,7 @@ import org.greencheek.jms.yankeedo.structure.RequiredParameter._
 import scala.concurrent.duration._
 import org.greencheek.jms.yankeedo.structure.actions._
 import org.greencheek.jms.yankeedo.scenarioexecution.producer.message.CamelMessageSource
-import org.greencheek.jms.yankeedo.consumer.scenarioexecution.messageprocessor.CamelMessageProcessor
+import org.greencheek.jms.yankeedo.scenarioexecution.consumer.messageprocessor.CamelMessageProcessor
 
 /**
  * User: dominictootell

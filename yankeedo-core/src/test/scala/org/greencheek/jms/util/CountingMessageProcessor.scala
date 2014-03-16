@@ -16,7 +16,7 @@
 package org.greencheek.jms.util
 
 import akka.camel.CamelMessage
-import org.greencheek.jms.yankeedo.consumer.scenarioexecution.messageprocessor.CamelMessageProcessor
+import org.greencheek.jms.yankeedo.scenarioexecution.consumer.messageprocessor.CamelMessageProcessor
 
 /**
  * Created by dominictootell on 16/03/2014.

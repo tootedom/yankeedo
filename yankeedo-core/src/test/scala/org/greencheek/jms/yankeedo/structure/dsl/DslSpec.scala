@@ -25,7 +25,7 @@ import org.greencheek.jms.yankeedo.structure.scenario.Scenario
 import org.greencheek.jms.yankeedo.structure.actions.{Queue, DurableTopic, JmsConsumerAction, JmsProducerAction}
 import org.greencheek.jms.yankeedo.scenarioexecution.producer.message.CamelMessageSource
 import akka.camel.CamelMessage
-import org.greencheek.jms.yankeedo.consumer.scenarioexecution.messageprocessor.SystemOutToStringCamelMessageProcessor
+import org.greencheek.jms.yankeedo.scenarioexecution.consumer.messageprocessor.SystemOutToStringCamelMessageProcessor
 
 /**
  * User: dominictootell

@@ -29,7 +29,7 @@ import java.util.concurrent.{CountDownLatch, TimeUnit}
 import akka.camel.CamelMessage
 import org.apache.activemq.broker.region.{Subscription, DestinationStatistics}
 import org.apache.activemq.command.ActiveMQDestination
-import org.greencheek.jms.yankeedo.consumer.scenarioexecution.messageprocessor.CamelMessageProcessor
+import org.greencheek.jms.yankeedo.scenarioexecution.consumer.messageprocessor.CamelMessageProcessor
 
 /**
  * Created by dominictootell on 15/03/2014.

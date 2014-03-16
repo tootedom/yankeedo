@@ -26,7 +26,7 @@ import scala.concurrent.duration._
 import akka.pattern.ask
 import scala.concurrent.Await
 import akka.camel.CamelMessage
-import org.greencheek.jms.yankeedo.consumer.scenarioexecution.messageprocessor.CamelMessageProcessor
+import org.greencheek.jms.yankeedo.scenarioexecution.consumer.messageprocessor.CamelMessageProcessor
 
 /**
  * Created by dominictootell on 14/03/2014.

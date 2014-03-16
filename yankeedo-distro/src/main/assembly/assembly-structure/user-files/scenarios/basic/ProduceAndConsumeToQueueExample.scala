@@ -17,7 +17,7 @@ package org.greencheek.jms.yankeedo.app
 
 import org.greencheek.jms.yankeedo.structure.scenario.ScenarioContainer
 import org.greencheek.jms.yankeedo.structure.dsl.Dsl._
-import org.greencheek.jms.yankeedo.consumer.scenarioexecution.messageprocessor.SystemOutToStringCamelMessageProcessor
+import org.greencheek.jms.yankeedo.scenarioexecution.consumer.messageprocessor.SystemOutToStringCamelMessageProcessor
 
 class ProduceAndConsumeToQueueExample extends ScenarioContainer {
   withScenarios(

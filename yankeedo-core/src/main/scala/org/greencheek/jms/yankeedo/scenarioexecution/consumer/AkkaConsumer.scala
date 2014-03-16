@@ -23,7 +23,7 @@ import org.greencheek.jms.yankeedo.structure.actions.{JmsConsumerAction => JmsCo
 import org.greencheek.jms.yankeedo.scenarioexecution.ConsumerFinished
 import scala.concurrent.duration.{Duration, FiniteDuration}
 import scala.concurrent.duration.SECONDS
-import org.greencheek.jms.yankeedo.consumer.scenarioexecution.messageprocessor.CamelMessageProcessor
+import org.greencheek.jms.yankeedo.scenarioexecution.consumer.messageprocessor.CamelMessageProcessor
 
 /**
  * User: dominictootell

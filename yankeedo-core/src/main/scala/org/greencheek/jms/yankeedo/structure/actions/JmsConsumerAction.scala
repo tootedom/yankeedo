@@ -15,7 +15,7 @@
  */
 package org.greencheek.jms.yankeedo.structure.actions
 
-import org.greencheek.jms.yankeedo.consumer.scenarioexecution.messageprocessor.{SystemOutToStringCamelMessageProcessor, CamelMessageProcessor}
+import org.greencheek.jms.yankeedo.scenarioexecution.consumer.messageprocessor.{CamelMessageProcessor, SystemOutToStringCamelMessageProcessor}
 
 
 /**

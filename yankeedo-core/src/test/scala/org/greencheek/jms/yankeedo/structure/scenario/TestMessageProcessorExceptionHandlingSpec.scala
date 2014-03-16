@@ -26,7 +26,7 @@ import java.util.concurrent.TimeUnit
 import akka.camel.CamelMessage
 import org.specs2.runner.JUnitRunner
 import org.junit.runner.RunWith
-import org.greencheek.jms.yankeedo.consumer.scenarioexecution.messageprocessor.CamelMessageProcessor
+import org.greencheek.jms.yankeedo.scenarioexecution.consumer.messageprocessor.CamelMessageProcessor
 
 /**
  * Created by dominictootell on 15/03/2014.
