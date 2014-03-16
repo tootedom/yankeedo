@@ -23,7 +23,7 @@ import org.greencheek.jms.util.PortUtil
 import org.apache.activemq.store.memory.MemoryPersistenceAdapter
 import java.util.{Map => JMap}
 import org.apache.activemq.command.ActiveMQDestination
-import org.apache.activemq.broker.region.{DestinationStatistics, Destination}
+import org.apache.activemq.broker.region.{Subscription, DestinationStatistics, Destination}
 import scala.collection.JavaConversions._
 
 /**
@@ -74,6 +74,20 @@ trait BrokerBasedSpec extends Specification {
     broker.waitUntilStopped()
   }
 
+
+  def getConsumersForDestination(destinations : JMap[ActiveMQDestination,Destination],
+                                        destinationName : String,
+                                        filter : ((ActiveMQDestination) => Boolean)) : Option[List[Subscription]] = {
+
+    for(dest : ActiveMQDestination <- destinations.keySet().toList) {
+      if(filter(dest)) {
+        if(dest.getPhysicalName.equals(destinationName)) {
+          return Some(destinations.get(dest).getConsumers.toList)
+        }
+      }
+    }
+    None
+  }
 
   def getDestinationStatsForDestination(destinations : JMap[ActiveMQDestination,Destination],
                                         destinationName : String,

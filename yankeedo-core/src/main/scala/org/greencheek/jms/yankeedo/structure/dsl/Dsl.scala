@@ -163,12 +163,12 @@ object Dsl {
       )
     }
 
-
-    def apply {
+    def with_default_subscriber_info() = {
       val builder = consumerScenario._2._2.scenario
       new ConsumerPopulatedScenario(
         JmsActionTypeBuilder.builder.consumerDurableTopic(consumerScenario._1).build().asInstanceOf[JmsConsumerAction],
-        builder)
+        builder
+      )
     }
   }
 

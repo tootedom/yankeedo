@@ -54,7 +54,7 @@ class AkkaConsumer(val jmsAction : JmsCons,
 
   override def autoAck = false
   override def endpointUri = endpoint;
-  override def replyTimeout: FiniteDuration = Duration(1,SECONDS)
+  override def replyTimeout: FiniteDuration = Duration(5,SECONDS)
 
   private def stop = {
     try {

@@ -30,7 +30,6 @@ case object ProducerFinished extends ScenarioActorMessage
 case object ExecutionMonitorFinished extends ScenarioActorMessage
 case object ScenarioStart extends ScenarioActorMessage
 case class ScenarioExecutionMonitorRunDurationFinished(val durationThatExpired : Duration) extends ScenarioActorMessage("Run For Duration Expired: " + durationThatExpired)
-case class ScenarioExecutionFinished(val scenario : Scenario) extends ScenarioActorMessage
 case object StartExecutingScenarios extends ScenarioActorMessage
 case object ReturnScenarioActorSystems extends ScenarioActorMessage
 case class ScenarioActorSystems(val actorSystems : List[ActorSystem])
