@@ -56,6 +56,7 @@
         <property name="cacheProducers" value="true"></property>
         <property name="reconnectOnException" value="true"></property>
         <property name="sessionCacheSize" value="${jms.sessioncachesize:10}"></property>
+        <property name="clientId" value="${jms.clientId}"></property>
     </bean>
 
     <!--<bean id="cachingConnectionFactory" class="org.apache.activemq.pool.PooledConnectionFactory">-->
@@ -73,7 +74,6 @@
         <property name="acknowledgementMode" value="${jms.ackMode:2}"/>
         <property name="timeToLive" value="${jms.timeToLive:2000}" />
         <property name="cacheLevelName" value="CACHE_CONSUMER" />
-
     </bean>
 
     <bean id="jms" class="org.apache.camel.component.jms.JmsComponent">

@@ -94,7 +94,9 @@ object Dsl {
       createQueue(destination, action)
     }
 
-    def durabletopic(destination: String) = (destination, action)
+    def durabletopic(destination: String) = {
+      (destination, action)
+    }
 
 
     private def createTopic(dest: String, action: ConsumerPopulatedActionBasedScenario) = {
@@ -137,12 +139,36 @@ object Dsl {
   }
 
   class DurableTopicScenarioWithSubscriptionNameCreator(consumerScenario: DurableTopicScenario) {
-    def with_subscription_name(subscriptionName: String) = {
+    def with_subscription_name(subscriptionName: String ) = {
       val builder = consumerScenario._2._2.scenario
       new ConsumerPopulatedScenario(
-        JmsActionTypeBuilder.builder.consumerDurableTopic(consumerScenario._1, subscriptionName).build().asInstanceOf[JmsConsumerAction],
+        JmsActionTypeBuilder.builder.consumerDurableTopicWithSubscriptionName(consumerScenario._1, subscriptionName).build().asInstanceOf[JmsConsumerAction],
         builder
       )
+    }
+
+    def with_subscription_name_and_clientid(subscriptionName: String , clientId : String) = {
+      val builder = consumerScenario._2._2.scenario
+      new ConsumerPopulatedScenario(
+        JmsActionTypeBuilder.builder.consumerDurableTopicWithSubscriptionAndClientId(consumerScenario._1, subscriptionName, clientId).build().asInstanceOf[JmsConsumerAction],
+        builder
+      )
+    }
+
+    def with_clientid( clientId : String) = {
+      val builder = consumerScenario._2._2.scenario
+      new ConsumerPopulatedScenario(
+        JmsActionTypeBuilder.builder.consumerDurableTopicWithClientId(consumerScenario._1, clientId).build().asInstanceOf[JmsConsumerAction],
+        builder
+      )
+    }
+
+
+    def apply {
+      val builder = consumerScenario._2._2.scenario
+      new ConsumerPopulatedScenario(
+        JmsActionTypeBuilder.builder.consumerDurableTopic(consumerScenario._1).build().asInstanceOf[JmsConsumerAction],
+        builder)
     }
   }
 

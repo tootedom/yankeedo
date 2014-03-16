@@ -15,48 +15,43 @@
  */
 package org.greencheek.jms.yankeedo.structure.scenario
 
-import org.greencheek.jms.yankeedo.structure.dsl.Dsl._
-import akka.actor.{Props, ActorRef}
-import org.greencheek.jms.yankeedo.scenarioexecution.{StartExecutingScenarios, ReturnScenarioActorSystems, ScenarioActorSystems, ScenariosExecutionManager}
-import akka.util.Timeout
-import akka.pattern.ask
-import scala.concurrent.duration._
-import scala.concurrent.Await
-import java.util.concurrent.TimeUnit
-import org.greencheek.jms.yankeedo.consumer.messageprocessor.CamelMessageProcessor
-import akka.camel.CamelMessage
 import org.specs2.runner.JUnitRunner
 import org.junit.runner.RunWith
+import org.greencheek.jms.yankeedo.structure.dsl.Dsl._
+
+import akka.actor.{Props, ActorRef}
+import org.greencheek.jms.yankeedo.scenarioexecution.{ReturnScenarioActorSystems, StartExecutingScenarios, ScenarioActorSystems, ScenariosExecutionManager}
+import akka.util.Timeout
+import scala.concurrent.duration._
+import akka.pattern.ask
+import scala.concurrent.Await
+import java.util.concurrent.{CountDownLatch, TimeUnit}
+import org.greencheek.jms.yankeedo.consumer.messageprocessor.CamelMessageProcessor
+import akka.camel.CamelMessage
+import org.apache.activemq.broker.region.DestinationStatistics
 
 /**
  * Created by dominictootell on 15/03/2014.
  */
 @RunWith(classOf[JUnitRunner])
-class TestMessageProcessorExceptionHandlingSpec extends BrokerBasedSpec {
+class TestDurableTopicScenarioSpec extends BrokerBasedSpec {
 
   val myContext = WithActorSystem();
 
 
   "Producing messages" >> {
-    "Check that message is not consumed when exception throw, but message processor says not to consume" in myContext {
-      doTestConsumer(myContext,false,"queuewithnoconsume",100,1) should beTrue
-    }
+    "Check messages sent to a durable topic persists" in myContext {
 
-    "Check that message is consumed when exception throw, but message processor says to consume" in myContext {
-      doTestConsumer(myContext,true,"queuewithconsume",99,1) should beTrue
-    }
+      var appLatch = myContext.latch
+      val actorSystem = myContext.actorSystem
 
-    def doTestConsumer(testContext : WithActorSystem, consumeOnException: Boolean, queueName : String, messagesExpectedOnQueue : Int,
-                       messageExceptedToBeSentForProcessing : Int) : Boolean = {
-      val appLatch = testContext.latch
-      val actorSystem = testContext.actorSystem
-
-      val messageProcessor = new MessageProcessorThrowingException(consumeOnException)
+      val messageProcessor = new CountingMessageProcessor
 
       val producerScenario1 = createScenario(
         "Consumer 1 message scenario" connect_to "tcp://localhost:" +  port + "?daemon=true&jms.closeTimeout=200"
-          until_no_of_messages_consumed 1
-          consume from queue queueName
+          until_no_of_messages_consumed 10
+          consume from durabletopic "persistenttopic"
+          with_subscription_name_and_clientid("bob","bob")
           with_message_consumer messageProcessor
           prefetch 1
       )
@@ -64,7 +59,7 @@ class TestMessageProcessorExceptionHandlingSpec extends BrokerBasedSpec {
       val producerScenario2 = createScenario(
         "Product 100 messages scenario" connect_to "tcp://localhost:" +  port + "?daemon=true&jms.closeTimeout=200"
           until_no_of_messages_sent 100
-          produce to queue queueName
+          produce to topic "persistenttopic"
           with_persistent_delivery
       )
 
@@ -90,30 +85,57 @@ class TestMessageProcessorExceptionHandlingSpec extends BrokerBasedSpec {
 
       ok should beTrue
 
+      messageProcessor.numberOfMessagesProcessed should beEqualTo(10)
+
+      val scenario = createScenario(
+        "Consumer 1 message scenario" connect_to "tcp://localhost:" +  port + "?daemon=true&jms.closeTimeout=200"
+          until_no_of_messages_consumed 15
+          consume from durabletopic "persistenttopic"
+          with_subscription_name_and_clientid("bob","bob")
+          with_message_consumer messageProcessor
+          prefetch 1
+      )
+
+      appLatch = new CountDownLatch(1)
+
+      val scenarioExecutor2 : ActorRef = actorSystem.actorOf(Props(new ScenariosExecutionManager(appLatch,ScenarioContainer(scenario))))
+      scenarioExecutor2 ! StartExecutingScenarios
+
+
+      ok = false
+      try {
+        ok = appLatch.await(15,TimeUnit.SECONDS)
+      } catch {
+        case e: Exception => {
+
+        }
+      }
+
+      ok should beTrue
+
+
+      messageProcessor.numberOfMessagesProcessed should beEqualTo(25)
+
       val map = broker.getBroker.getDestinationMap()
-      getMessageCountForQueueDestination(map,queueName) should beEqualTo(messagesExpectedOnQueue)
-      messageProcessor.numberOfMessagesProcessed should beEqualTo(messageExceptedToBeSentForProcessing)
 
-      true
+      getMessageCountForTopicDestinationCustomCounter(map,"persistenttopic",
+      { stat : DestinationStatistics => stat.getEnqueues.getCount-stat.getDispatched.getCount}) should be lessThanOrEqualTo(75)
+
+    }
+
+
+    class CountingMessageProcessor extends CamelMessageProcessor{
+      @volatile var _numberOfMessagesProcessed : Int = 0
+
+      def process(message: CamelMessage) {
+        _numberOfMessagesProcessed+=1
+      }
+
+      def consumerOnError: Boolean = true
+
+      def numberOfMessagesProcessed : Int = {
+        _numberOfMessagesProcessed
+      }
     }
   }
-
-
-
-
-  class MessageProcessorThrowingException(val consumeOnException : Boolean = true) extends CamelMessageProcessor{
-    @volatile var _numberOfMessagesProcessed : Int = 0
-
-    def process(message: CamelMessage) {
-      _numberOfMessagesProcessed+=1
-      throw new Exception("MessageProcessorThrowingException")
-    }
-
-    def consumerOnError: Boolean = consumeOnException
-
-    def numberOfMessagesProcessed : Int = {
-      _numberOfMessagesProcessed
-    }
-  }
-
 }

@@ -19,7 +19,7 @@ import org.apache.camel.component.jms.JmsComponent
 import org.springframework.context.support.{PropertySourcesPlaceholderConfigurer, ClassPathXmlApplicationContext}
 import java.util.Properties
 import org.greencheek.jms.yankeedo.structure.scenario.Scenario
-import org.greencheek.jms.yankeedo.structure.actions.{JmsConsumerAction, JmsProducerAction}
+import org.greencheek.jms.yankeedo.structure.actions.{DurableTopic, JmsConsumerAction, JmsProducerAction}
 
 /**
  * User: dominictootell
@@ -61,6 +61,14 @@ class ClassPathXmlApplicationContextJmsConfiguration(val scenario : Scenario) ex
     props.setProperty("jms.broker.url", scenario.jmsUrl);
     scenario.jmsAction match {
       case x:JmsConsumerAction => {
+        x.destination match {
+          case x : DurableTopic => {
+            props.setProperty("jms.clientId",x.clientId)
+          }
+          case _ => {
+            props.setProperty("jms.clientId","")
+          }
+        }
         props.setProperty("jms.max.concurrentConsumer",x.numberOfConsumers.toString)
         props.setProperty("jms.concurrentConsumer",x.numberOfConsumers.toString)
         props.setProperty("jms.prefetch",x.prefetch.toString)

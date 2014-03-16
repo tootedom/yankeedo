@@ -38,13 +38,26 @@ object JmsActionTypeBuilder {
     def consumeTopic(dest: String) =
       new JmsActionTypeBuilder[TRUE](Some(new Topic(dest)),Some(CONSUMER))
 
-    def consumerDurableTopic(dest: String, subscriptionName: String) =
+    def consumerDurableTopicWithSubscriptionName(dest: String, subscriptionName: String) = {
       new JmsActionTypeBuilder[TRUE](
         Some(new DurableTopic(dest,subscriptionName)),Some(CONSUMER))
+    }
 
-    def consumerDurableTopic(dest: String) =
+    def consumerDurableTopicWithSubscriptionAndClientId(dest: String, subscriptionName : String, clientId : String) = {
+      new JmsActionTypeBuilder[TRUE](
+        Some(new DurableTopic(dest,subscriptionName,clientId)),Some(CONSUMER))
+    }
+
+
+    def consumerDurableTopicWithClientId(dest: String,clientId:String) = {
+      new JmsActionTypeBuilder[TRUE](
+        Some(new DurableTopic(dest,clientId = clientId)),Some(CONSUMER))
+    }
+
+    def consumerDurableTopic(dest: String) = {
       new JmsActionTypeBuilder[TRUE](
         Some(new DurableTopic(dest)),Some(CONSUMER))
+    }
 
 
     def sendToQueue(dest: String) =

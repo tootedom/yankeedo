@@ -114,7 +114,7 @@ trait BrokerBasedSpec extends Specification {
 
   def getMessageCountForQueueDestination(destinations : JMap[ActiveMQDestination,Destination],
                                          destinationName : String) : Long = {
-    getCountForDestination(destinations,destinationName,getDestinationStatsForQueueDestination(_,_),{ stat : DestinationStatistics => stat.getMessages.getCount})
+    getCountForDestination(destinations,destinationName,getDestinationStatsForQueueDestination(_,_),{ stat : DestinationStatistics => stat.getEnqueues.getCount - stat.getDequeues.getCount})
   }
 
   def getProducerCountForQueueDestination(destinations : JMap[ActiveMQDestination,Destination],
@@ -126,6 +126,13 @@ trait BrokerBasedSpec extends Specification {
                                          destinationName : String) : Long = {
     getCountForDestination(destinations,destinationName,getDestinationStatsForTopicDestination(_,_),{ stat : DestinationStatistics => stat.getMessages.getCount})
   }
+
+  def getMessageCountForTopicDestinationCustomCounter(destinations : JMap[ActiveMQDestination,Destination],
+                                         destinationName : String,
+                                         counterFuction : (DestinationStatistics) => Long ) : Long = {
+    getCountForDestination(destinations,destinationName,getDestinationStatsForTopicDestination(_,_),counterFuction)
+  }
+
 
   def getProducerCountForTopicDestination(destinations : JMap[ActiveMQDestination,Destination],
                                           destinationName : String) : Long = {

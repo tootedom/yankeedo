@@ -20,10 +20,25 @@ package org.greencheek.jms.yankeedo.structure.actions
  * Date: 06/01/2013
  * Time: 15:17
  */
+object JmsDestination {
+  import java.util.concurrent.atomic.AtomicInteger
+
+  private val durableTopicSubscripberNameIncrementer = new AtomicInteger(1)
+  private val durableTopicClientIdIncrementer = new AtomicInteger(1)
+
+  val defaultTopicName : String = "yankeedoo.topic"
+  val defaultQueueName : String = "yankeedoo.queue"
+  val defaultDurableTopicName : String = "yankeedoo.durabletopic"
+
+  def defaultDurableTopicSubscriptionName : String = "yankeedoo.subscription."+durableTopicSubscripberNameIncrementer.getAndIncrement
+  def defaultDurableTopicClientId : String = "yankeedoo.client."+durableTopicClientIdIncrementer.getAndIncrement
+}
+
+
 abstract class JmsDestination {
   val name: String
 }
-case class Queue(val name: String = "amqjmsline.queue") extends JmsDestination {
+case class Queue(val name: String = JmsDestination.defaultQueueName) extends JmsDestination {
 
   override def toString = {
     val buf = new StringBuilder
@@ -32,7 +47,7 @@ case class Queue(val name: String = "amqjmsline.queue") extends JmsDestination {
   }
 }
 
-case class Topic(val name: String = "amqjmsline.topic") extends JmsDestination {
+case class Topic(val name: String = JmsDestination.defaultDurableTopicName) extends JmsDestination {
   override def toString = {
     val buf = new StringBuilder
     buf ++= "topic:" ++= name
@@ -40,11 +55,14 @@ case class Topic(val name: String = "amqjmsline.topic") extends JmsDestination {
   }
 }
 
-case class DurableTopic(override val name: String, val subscriptionName: String = "amqjmsline.subscription") extends JmsDestination {
+case class DurableTopic(override val name: String = JmsDestination.defaultDurableTopicName,
+                        val subscriptionName: String = JmsDestination.defaultDurableTopicSubscriptionName,
+                        val clientId : String = JmsDestination.defaultDurableTopicClientId) extends JmsDestination {
   override def toString = {
     val buf = new StringBuilder
     buf ++= "durable-topic:" ++= name +=','
-    buf ++= "subscriptionName:" ++=subscriptionName
+    buf ++= "subscriptionName:" ++=subscriptionName +=','
+    buf ++= "clientId:" ++= clientId
     buf.toString()
   }
 }

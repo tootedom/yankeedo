@@ -19,10 +19,11 @@ import akka.camel.{CamelMessage, Consumer}
 import akka.actor.Status.Failure
 import akka.camel.Ack
 import java.util.concurrent.atomic.{AtomicBoolean, AtomicLong}
-import org.greencheek.jms.yankeedo.structure.actions.{Queue, Topic, JmsConsumerAction => JmsCons}
+import org.greencheek.jms.yankeedo.structure.actions.{JmsConsumerAction => JmsCons, DurableTopic, Queue, Topic}
 import org.greencheek.jms.yankeedo.scenarioexecution.ConsumerFinished
 import org.greencheek.jms.yankeedo.consumer.messageprocessor.CamelMessageProcessor
-
+import scala.concurrent.duration.{Duration, FiniteDuration}
+import scala.concurrent.duration.SECONDS
 
 /**
  * User: dominictootell
@@ -38,6 +39,14 @@ class AkkaConsumer(val jmsAction : JmsCons,
     jmsAction destination match {
       case Topic(destName) => "jms:topic:" + destName + "?concurrentConsumers=" + jmsAction.numberOfConsumers
       case Queue(destName) => "jms:queue:" + destName + "?concurrentConsumers=" + jmsAction.numberOfConsumers
+      case DurableTopic(destName,subscriptionName,clientId) => {
+        val buf = new StringBuilder(125)
+        buf.append("jms:topic:").append(destName).append("?concurrentConsumers=")
+        buf.append(jmsAction.numberOfConsumers)
+//        buf.append("&clientId=").append(clientId)
+        buf.append("&durableSubscriptionName=").append(subscriptionName).toString
+      }
+
     }
   }
   val infinite : Boolean = if(messagesAttemptedToProcess.get() == -1) true else false
@@ -45,6 +54,7 @@ class AkkaConsumer(val jmsAction : JmsCons,
 
   override def autoAck = false
   override def endpointUri = endpoint;
+  override def replyTimeout: FiniteDuration = Duration(1,SECONDS)
 
   private def stop = {
     try {
@@ -101,6 +111,7 @@ class AkkaConsumer(val jmsAction : JmsCons,
 
 
         if (consumeMessage) {
+          System.out.println("ACKKKKKK")
           sender ! Ack
         }
         else {
