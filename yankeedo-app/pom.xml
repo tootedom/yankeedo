@@ -4,8 +4,7 @@
 	<parent>
         <groupId>org.greencheek.mq</groupId>
         <artifactId>yankeedo-parent</artifactId>
-		<version>1.0.0-SNAPSHOT</version>
-        <relativePath>../</relativePath>
+		<version>0.1.0-SNAPSHOT</version>
 	</parent>
 	<artifactId>yankeedo-app</artifactId>
 	<name>Yankeedo Command Line App</name>

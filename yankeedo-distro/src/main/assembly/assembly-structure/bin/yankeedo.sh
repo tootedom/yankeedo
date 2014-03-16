@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Copyright 2012-2014 greencheek.org (www.greencheek.org)
+# Copyright 2012-2013 greencheek.org (www.greencheek.org)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
