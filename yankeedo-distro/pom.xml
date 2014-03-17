@@ -6,10 +6,10 @@
 		<artifactId>yankeedo-parent</artifactId>
 		<version>0.1.1-SNAPSHOT</version>
 	</parent>
-
 	<artifactId>yankeedo-distro</artifactId>
 	<packaging>pom</packaging>
-
+    <description>Zip Distribution of yankeedo</description>
+    <name>Distribution of Yankeedoo</name>
 	<properties>
 		<header.basedir>${project.parent.basedir}</header.basedir>
 	</properties>

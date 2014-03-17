@@ -3,7 +3,8 @@
     <groupId>org.greencheek.mq</groupId>
     <artifactId>yankeedo-messagesources</artifactId>
     <packaging>jar</packaging>
-    <name>Message Sources for sending content from a producer</name>
+    <name>Yankeedoo Message Sources</name>
+    <description>Message Sources for sending content from a producer</description>
     <url>http://tootedom.github.com</url>
     <parent>
         <artifactId>yankeedo-parent</artifactId>

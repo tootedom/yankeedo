@@ -4,6 +4,7 @@
     <artifactId>yankeedo-core</artifactId>
     <packaging>jar</packaging>
     <name>Yankeedo Core</name>
+    <description>Core library for yankeedoo</description>
     <url>http://tootedom.github.com</url>
     <parent>
         <artifactId>yankeedo-parent</artifactId>
