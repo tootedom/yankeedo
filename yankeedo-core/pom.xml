@@ -9,7 +9,7 @@
     <parent>
         <artifactId>yankeedo-parent</artifactId>
         <groupId>org.greencheek.mq</groupId>
-        <version>0.1.1</version>
+        <version>0.1.2-SNAPSHOT</version>
     </parent>
     <properties>
         <header.basedir>${project.parent.basedir}</header.basedir>
