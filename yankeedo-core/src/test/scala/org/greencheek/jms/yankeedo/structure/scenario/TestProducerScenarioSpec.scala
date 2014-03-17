@@ -140,7 +140,8 @@ class TestProducerScenarioSpec extends BrokerBasedSpec {
       val actorSystem = myContext.actorSystem
 
       val scenario = createScenario(
-        "produce messages for 3 seconds scenario, with delay" connect_to "tcp://localhost:" +  port + "?daemon=true&jms.closeTimeout=200"
+        "produce messages for 3 seconds scenario, with delay"
+        connect_to "tcp://localhost:" +  port + "?daemon=true&jms.closeTimeout=200"
           run_for Duration(3,SECONDS)
           until_no_of_messages_sent -1
           produce to queue "delayedqueue"
