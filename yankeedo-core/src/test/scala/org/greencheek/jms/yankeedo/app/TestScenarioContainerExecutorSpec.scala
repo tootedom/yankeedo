@@ -88,7 +88,7 @@ class TestScenarioContainerExecutorSpec extends BrokerBasedSpec {
       ScenarioContainerExecutor.executeScenarios(scenarioContainer,Duration(5,SECONDS)) should beEqualTo(0)
 
 
-      messageProcessor.numberOfPersistentMessages should greaterThan(4)
+      messageProcessor.numberOfPersistentMessages should greaterThanOrEqualTo(4)
       messageProcessor.numberOfPersistentMessages should lessThan(10)
 
     }

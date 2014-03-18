@@ -87,6 +87,17 @@
             <id>scct-plugin-repo</id>
             <url>http://mtkopone.github.com/scct/maven-repo</url>
         </repository>
+        <repository>
+            <id>sonatype.oss.snapshots</id>
+            <name>Sonatype OSS Snapshot Repository</name>
+            <url>http://oss.sonatype.org/content/repositories/snapshots</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
     </repositories>
     <pluginRepositories>
         <pluginRepository>
@@ -106,6 +117,17 @@
             </releases>
             <snapshots>
                 <enabled>false</enabled>
+            </snapshots>
+        </pluginRepository>
+        <pluginRepository>
+            <id>sonatype.oss.snapshots</id>
+            <name>Sonatype OSS Snapshot Repository</name>
+            <url>http://oss.sonatype.org/content/repositories/snapshots</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
             </snapshots>
         </pluginRepository>
     </pluginRepositories>
@@ -255,12 +277,14 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+
     <build>
+
         <plugins>
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.6.5.201403032054</version>
+                <version>0.7.0-beta-SNAPSHOT</version>
                 <executions>
                     <!--
                        Prepares the property pointing to the JaCoCo runtime agent which
@@ -298,7 +322,9 @@
                             <!--<outputDirectory>${project.reporting.outputDirectory}/jacoco-ut</outputDirectory>-->
                         <!--</configuration>-->
                     <!--</execution>-->
+
                 </executions>
+
             </plugin>
             <plugin>
                 <groupId>timezra.maven</groupId>

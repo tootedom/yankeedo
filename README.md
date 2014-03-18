@@ -9,7 +9,23 @@ These Scenarios are then held within a ScenarioContainer which is executed.  A S
 publishing or consuming.  The Container is use to start the scenarios in order.  The Scenarios are executed inside of
 an Akka Actor utilising Apache Camel.
 
+----
 
+# Shout outs/Thanks to #
+
+Major Major thanks to the Gatling application (*https://github.com/excilys/gatling*).   A 
+proportion of this application would not have been possible without the Gatling application.
+That of the Compilation of on the fly Scala source.  The gatling load testing tool is extremely
+flexible as it allows you to write your load test scenarios as scala files; which it compiles at start up.
+
+This allows you to write any scala code to run your load test, giving the user a huge amount
+of flexibility.
+
+The Yankeedoo application has taken the idea behind this, and also adapted the code it used to compile
+it's load testing scenarios; in order to compile the AMQ Scenarios below.  Therefore massive amount of
+credit goes to the Gatling project for working out how to you the Zinc compiler programatically 
+
+----
     
 # Usage #
 
@@ -105,7 +121,7 @@ Here is an example Scala App that sends a default message to a queue:
       ScenarioContainerExecutor.executeScenarios(scenarioContainer,Duration(5,SECONDS))
     }
 
-     
+----     
 
 # DSL #
 
@@ -145,6 +161,8 @@ The following sends to a queue for 3 seconds, as many messages as possible
         until_no_of_messages_sent -1
         produce to queue "delayedqueue"
     )
+        
+### Produce to a Queue, Sending message with a delay ###
     
 The following sends to a queue for 3 seconds, as many messages as possible; but each message is sent 
 with a duration of 1 second between each message send    
@@ -158,6 +176,8 @@ with a duration of 1 second between each message send
         with_per_message_delay_of Duration(1,SECONDS)
     )
     
+### Produce to a Queue, but Specify the message need not be persisted ###    
+    
 The following sends to a queue with no persistence
 
     createScenario(
@@ -169,6 +189,8 @@ The following sends to a queue with no persistence
         with_no_persistent_delivery and
         with_per_message_delay_of Duration(1,SECONDS)
     )
+    
+### Produce to a queue, but make the send asynchronous (i.e don't wait for broker ack ###    
 
 The following sends to a queue with persistent messages, but sends the message asynchronously
 
@@ -186,6 +208,8 @@ The following sends to a queue with persistent messages, but sends the message a
 Please see the following for more information about persistent messaging and asynchronous sends:
 - http://activemq.apache.org/how-do-i-enable-asynchronous-sending.html and 
 - http://activemq.apache.org/what-is-the-difference-between-persistent-and-non-persistent-delivery.html  
+
+----
 
 ### Configuring the message sent ###
 
@@ -218,8 +242,8 @@ It is completely possible to send any message body, and any range of headers.  T
     
 Contains a couple of helpers that can:
 
-- Read the contents of a file
-- Round Robin read the contents of a set of files in a directory
+- Read the contents of a file, using that as the message content
+- Round Robin read the contents of a set of files in a directory, using those as message content
 
 Within the distribution an example exists that reads a file (ProduceAndConsumeToQueueFromFileExample) 
 from the *<DISTRO_DIR>/data-files* directory:
@@ -318,7 +342,104 @@ Putting the following code within the *<DISTRO_DIR>/user-files/scenarios/* direc
 
     }
      
+----
 
+## Consumers ##
+
+The following shows the various options that are available in the DSL for configuring
+a consumer, that will read message from AMQ:
+
+
+### Consume a specific number of messages ###
+
+The following consumes 5 message from the broker.  It creates 1 consumer that is taking messages
+from the queue *consumerqueue*.  Only one message is prefetched by this consumer at a time.  
+
+    createScenario(
+        "consumer 10 messages" connect_to "tcp://localhost:61616?daemon=true&jms.closeTimeout=200"
+        until_no_of_messages_consumed 5
+        consume from queue "consumerqueue"
+        prefetch 1
+    )    
+    
+### Create many consumers on a queue ###        
+
+The following consumes 10 messages from the broker on the queue *consumerqueue*, but creates 10 consumers for that
+queue.
+
+    createScenario(
+        "consumer 10 messages" connect_to "tcp://localhost:61616?daemon=true&jms.closeTimeout=200"
+        until_no_of_messages_consumed 5
+        consume from queue "consumerqueue"
+        prefetch 1
+        number_of_consumers 10
+    )    
+    
+### A Custom Message Processor ###
+
+By default when you create a consumer, the *CamelMessage (http://doc.akka.io/api/akka/2.3.0/index.html#akka.camel.CamelMessage)*
+will just be printed to Stdout, via a normal println(message).  This is perform using a default *CamelMessageProcessor* (SystemOutToStringCamelMessageProcessor).     
+
+    package org.greencheek.jms.yankeedo.scenarioexecution.consumer.messageprocessor
+
+    import akka.camel.CamelMessage
+
+    /**
+     * User: dominictootell
+     * Date: 06/01/2013
+     * Time: 17:38
+     */
+    object SystemOutToStringCamelMessageProcessor extends CamelMessageProcessor{
+      def process(message: CamelMessage) {
+        println(message)
+      }
+
+      def consumerOnError: Boolean = true
+    }
+
+When creating a consumer you can specify a custom message process by implementing the following simple trait,
+and specifying your implementation within the createScenario.
+
+    package org.greencheek.jms.yankeedo.scenarioexecution.consumer.messageprocessor
+
+    import akka.camel.CamelMessage
+
+    trait CamelMessageProcessor {
+      def process(message : CamelMessage)
+      def consumerOnError : Boolean
+    }
+
+For example here is a message process that simply counts the number of messages it has consumed.
+The below creates a Consumer that runs until it has consumed 10 messages, using a custom message processor 
+to handle the incoming consumer
+
+    val messageProcessor = new CountingMessageProcessor()
+
+    val consumerScenario1 = createScenario(
+        "produce 10 message scenario" connect_to "tcp://localhost:" +  port + "?daemon=true&jms.closeTimeout=200"
+        until_no_of_messages_consumed 10
+        consume from queue "scenariocontainer"
+        with_message_consumer messageProcessor
+        prefetch 1
+    )
+    
+    class CountingMessageProcessor extends CamelMessageProcessor {
+        @volatile var _numberOfMessagesProcessed : Int = 0
+
+        def process(message: CamelMessage) {
+            _numberOfMessagesProcessed+=1
+        }
+
+        def consumerOnError: Boolean = true
+
+        def numberOfMessagesProcessed : Int = {
+            _numberOfMessagesProcessed
+        }
+    }
+
+
+
+----
 
 ### Distribution ###
 
@@ -341,6 +462,7 @@ The distribution folder structure looks as follows:
     |-----advanced
     |-----basic
     
-    
+
+
     
     

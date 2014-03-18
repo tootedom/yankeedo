@@ -27,6 +27,8 @@ import akka.pattern.ask
 import scala.concurrent.Await
 import org.greencheek.jms.yankeedo.scenarioexecution.producer.message.CamelMessageSource
 import akka.camel.CamelMessage
+import org.apache.activemq.broker.region.Subscription
+import org.apache.activemq.command.ActiveMQDestination
 
 /**
  * Created by dominictootell on 14/03/2014.
@@ -139,6 +141,68 @@ class TestProducterMultiScenarioSpec extends BrokerBasedSpec {
       getProducerCountForQueueDestination(map,"consumerqueue") should beEqualTo(0)
 
     }
+
+    "Check consumer count is greater than 1" in myContext {
+      val appLatch = myContext.latch
+      val actorSystem = myContext.actorSystem
+
+
+      val consumerScenario1 = createScenario(
+        "consumer 10 messages" connect_to "tcp://localhost:" +  port + "?daemon=true&jms.closeTimeout=200"
+          until_no_of_messages_consumed 1000
+          consume from queue "consumerCount"
+          prefetch 1
+          number_of_consumers 1
+      )
+
+      val producerScenario2 = createScenario(
+        "produce 10 message scenario" connect_to "tcp://localhost:" +  port + "?daemon=true&jms.closeTimeout=200"
+          until_no_of_messages_sent 10
+          produce to queue "consumerCount"
+          with_message_source HelloStringWithTime()
+          with_per_message_delay_of(Duration(1,SECONDS))
+      )
+
+
+      val scenarioExecutor : ActorRef = actorSystem.actorOf(Props(new ScenariosExecutionManager(appLatch,
+                                                                      ScenarioContainer(consumerScenario1,producerScenario2).runFor(Duration(10,SECONDS)))))
+      scenarioExecutor ! StartExecutingScenarios
+
+      implicit val timeout = Timeout(2,SECONDS)
+      val future = scenarioExecutor ? ReturnScenarioActorSystems
+      val result = Await.result(future, timeout.duration).asInstanceOf[ScenarioActorSystems]
+
+      result should not beNull
+      val actorSystemSize = result.actorSystems.size
+      actorSystemSize should beEqualTo(2)
+
+      Thread.sleep(5000)
+
+      val map = broker.getBroker.getDestinationMap()
+
+      val subscription : Option[List[Subscription]] = getConsumersForDestination(map,"consumerCount",{dest : ActiveMQDestination => dest.isQueue})
+      subscription.isDefined should beTrue
+
+      val subscriptionList : List[Subscription] = subscription.get
+
+      subscriptionList.size should beEqualTo(1)
+
+      var ok : Boolean = false
+      try {
+        ok = appLatch.await(30,TimeUnit.SECONDS)
+      } catch {
+        case e: Exception => {
+
+        }
+      }
+
+      ok should beTrue
+
+      getMessageCountForQueueDestination(map,"consumerCount") should beEqualTo(0)
+      getProducerCountForQueueDestination(map,"consumerCount") should beEqualTo(0)
+
+    }
+
 
 
   }
