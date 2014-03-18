@@ -25,7 +25,7 @@
             <artifactId>yankeedo-messagesources</artifactId>
             <version>${project.version}</version>
         </dependency>
-	</dependencies>
+    </dependencies>
 
 	<build>
 		<plugins>
