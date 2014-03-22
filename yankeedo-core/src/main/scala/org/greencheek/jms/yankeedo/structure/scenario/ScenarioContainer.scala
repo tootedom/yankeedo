@@ -16,6 +16,7 @@
 package org.greencheek.jms.yankeedo.structure.scenario
 
 import concurrent.duration.Duration
+import org.greencheek.jms.yankeedo.stats.{DefaultOutputStats, OutputStats}
 
 /**
  * User: dominictootell
@@ -26,9 +27,10 @@ import concurrent.duration.Duration
  */
 trait ScenarioContainer {
 
-   @volatile private var _outputStats : Boolean =  true
-   @volatile private var _totalDuration : Duration = Duration.Inf
-   @volatile private var _scenarios : Seq[Scenario] = Nil
+  @volatile private var _outputStatsEnabled : Boolean = false;
+  @volatile private var _outputStatsOptions : Option[OutputStats] = None;
+  @volatile private var _totalDuration : Duration = Duration.Inf
+  @volatile private var _scenarios : Seq[Scenario] = Nil
 
   /**
    * The number of defined scenarios
@@ -36,12 +38,24 @@ trait ScenarioContainer {
    */
   final def size : Int = this.scenarios.size
 
+
+
+  final def outputStatsOptions(outputStatsOption : Option[OutputStats] ) : ScenarioContainer = {
+    _outputStatsOptions = outputStatsOption
+    _outputStatsEnabled = outputStatsOption match {
+      case Some(_) =>  true
+      case None => false
+    }
+    this
+  }
+
   /**
-   * Should we output the statistics that are accumulated for
-   * each scenario
+   * output stats to the defaults (System.out)
+   * @return
    */
-  final def outputStats(enable : Boolean) : ScenarioContainer = {
-    _outputStats = enable
+  final def outputStatus() : ScenarioContainer = {
+    _outputStatsOptions = Some(new DefaultOutputStats)
+    _outputStatsEnabled = true
     this
   }
 
@@ -96,8 +110,12 @@ trait ScenarioContainer {
     _scenarios
   }
 
-  final def outputStats : Boolean = {
-    _outputStats
+  final def outputStatsEnabled : Boolean = {
+    _outputStatsEnabled
+  }
+
+  final def outputStatsOptions : Option[OutputStats] = {
+    _outputStatsOptions
   }
 
 }

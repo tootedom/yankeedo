@@ -34,7 +34,8 @@ import org.LatencyUtils.LatencyStats
 class AkkaConsumer(val jmsAction : JmsCons,
                    val messageProcessor : CamelMessageProcessor,
                    val messagesAttemptedToProcess : AtomicLong,
-                   val stats : LatencyStats) extends Consumer {
+                   val stats : LatencyStats,
+                   val recordStatsImmediately : Boolean) extends Consumer {
   val messagesRecieved = new AtomicLong(0);
   val endpoint  = {
     jmsAction destination match {
@@ -52,7 +53,10 @@ class AkkaConsumer(val jmsAction : JmsCons,
   val infinite : Boolean = if(messagesAttemptedToProcess.get() == -1) true else false
   val stopped = new AtomicBoolean(false)
 
-  var lastMessageTime = System.nanoTime();
+  var lastMessageTime : Long = recordStatsImmediately match {
+    case true => System.nanoTime()
+    case false => -1
+  }
 
   override def autoAck = false
   override def endpointUri = endpoint;
@@ -83,7 +87,6 @@ class AkkaConsumer(val jmsAction : JmsCons,
         // if this is <0 the message then it will just not ack the message, and will send a failure
         if (stopped.get) {
           sender ! Failure(new Throwable("Message Consumer Finished.  Not Consuming message, waiting for shutdown"))
-
         }
         else
         {
@@ -100,7 +103,6 @@ class AkkaConsumer(val jmsAction : JmsCons,
           }
           else
           {
-
             var consumeMessage = true
             var exception: Option[Throwable] = None
             try {
@@ -134,7 +136,9 @@ class AkkaConsumer(val jmsAction : JmsCons,
         }
       } finally {
         val time = System.nanoTime()
-        stats.recordLatency(time - lastMessageTime)
+        if(lastMessageTime != -1) {
+          stats.recordLatency(time - lastMessageTime)
+        }
         lastMessageTime = time
       }
 

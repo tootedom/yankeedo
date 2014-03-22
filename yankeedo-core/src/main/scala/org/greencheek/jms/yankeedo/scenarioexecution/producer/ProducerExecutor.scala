@@ -65,7 +65,10 @@ class ProducerExecutor(val scenario : Scenario) extends Actor with Logging {
     case None => false
   }
 
-  var lastMessageTime : Long = System.nanoTime()
+  var lastMessageTime : Long = scenario.recordStatsImmediately match {
+    case true => System.nanoTime()
+    case false => -1
+  }
 
   override def receive = {
     case ExecutionMonitorFinished => {
@@ -98,7 +101,9 @@ class ProducerExecutor(val scenario : Scenario) extends Actor with Logging {
 
   private def recordStats() = {
     val currTime = System.nanoTime()
-    scenario.stats.recordLatency(currTime - lastMessageTime)
+    if(lastMessageTime != -1) {
+      scenario.stats.recordLatency(currTime - lastMessageTime)
+    }
     lastMessageTime = currTime
   }
 

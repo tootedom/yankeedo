@@ -61,7 +61,7 @@ class TestScenarioContainerRunForDurationSpec extends BrokerBasedSpec {
       )
 
       val scenarioContainer = ScenarioContainer(consumerScenario1,producerScenario1)
-      scenarioContainer.runFor(Duration(5,SECONDS))
+      scenarioContainer.runFor(Duration(7,SECONDS))
 
       val scenarioExecutor : ActorRef = actorSystem.actorOf(Props(new ScenariosExecutionManager(appLatch,scenarioContainer)))
       scenarioExecutor ! StartExecutingScenarios

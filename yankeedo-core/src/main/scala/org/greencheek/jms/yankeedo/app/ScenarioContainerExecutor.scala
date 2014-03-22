@@ -88,9 +88,9 @@ object ScenarioContainerExecutor extends Logging {
         error("Exception whilst shutting down scenario executor actor system",e)
       }
     } finally {
-      if (scenariosToRun.outputStats) {
+      if(!executedWithoutTimeout && scenariosToRun.outputStatsEnabled) {
         for(scenario <- scenariosToRun.scenarios) {
-          scenario.outputStats()
+          scenario.outputStats(scenariosToRun.outputStatsOptions.get)
         }
       }
     }

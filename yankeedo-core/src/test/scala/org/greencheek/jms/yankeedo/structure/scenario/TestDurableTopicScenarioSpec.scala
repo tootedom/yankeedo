@@ -30,6 +30,7 @@ import akka.camel.CamelMessage
 import org.apache.activemq.broker.region.{Subscription, DestinationStatistics}
 import org.apache.activemq.command.ActiveMQDestination
 import org.greencheek.jms.yankeedo.scenarioexecution.consumer.messageprocessor.CamelMessageProcessor
+import java.util.concurrent.atomic.AtomicInteger
 
 /**
  * Created by dominictootell on 15/03/2014.
@@ -216,7 +217,7 @@ class TestDurableTopicScenarioSpec extends BrokerBasedSpec {
           with_persistent_delivery
       )
 
-      val scenarioExecutor : ActorRef = actorSystem.actorOf(Props(new ScenariosExecutionManager(appLatch,ScenarioContainer(producerScenario1,producerScenario2))))
+      val scenarioExecutor : ActorRef = actorSystem.actorOf(Props(new ScenariosExecutionManager(appLatch,ScenarioContainer(producerScenario1,producerScenario2).outputStatus())))
       scenarioExecutor ! StartExecutingScenarios
 
       implicit val timeout = Timeout(2,SECONDS)
@@ -229,7 +230,7 @@ class TestDurableTopicScenarioSpec extends BrokerBasedSpec {
 
       var ok : Boolean = false
       try {
-        ok = appLatch.await(15,TimeUnit.SECONDS)
+        ok = appLatch.await(30,TimeUnit.SECONDS)
       } catch {
         case e: Exception => {
 
@@ -314,16 +315,16 @@ class TestDurableTopicScenarioSpec extends BrokerBasedSpec {
   }
 
   class CountingMessageProcessor extends CamelMessageProcessor {
-    @volatile var _numberOfMessagesProcessed : Int = 0
+    val _numberOfMessagesProcessed : AtomicInteger = new AtomicInteger(0)
 
     def process(message: CamelMessage) {
-      _numberOfMessagesProcessed+=1
+      _numberOfMessagesProcessed.incrementAndGet()
     }
 
     def consumerOnError: Boolean = true
 
     def numberOfMessagesProcessed : Int = {
-      _numberOfMessagesProcessed
+      _numberOfMessagesProcessed.get
     }
   }
 }

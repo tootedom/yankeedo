@@ -118,6 +118,11 @@ class ScenariosExecutionManager(val applicationLatch : CountDownLatch,
       context.stop(self)
     }
     finally {
+      if(scenarioContainer.outputStatsEnabled) {
+        for(scenario <- scenarioContainer.scenarios) {
+          scenario.outputStats(scenarioContainer.outputStatsOptions.get)
+        }
+      }
       applicationLatch.countDown()
     }
   }
