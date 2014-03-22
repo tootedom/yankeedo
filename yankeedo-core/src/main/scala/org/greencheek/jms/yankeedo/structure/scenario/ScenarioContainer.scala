@@ -26,6 +26,7 @@ import concurrent.duration.Duration
  */
 trait ScenarioContainer {
 
+   @volatile private var _outputStats : Boolean =  true
    @volatile private var _totalDuration : Duration = Duration.Inf
    @volatile private var _scenarios : Seq[Scenario] = Nil
 
@@ -34,6 +35,15 @@ trait ScenarioContainer {
    * @return
    */
   final def size : Int = this.scenarios.size
+
+  /**
+   * Should we output the statistics that are accumulated for
+   * each scenario
+   */
+  final def outputStats(enable : Boolean) : ScenarioContainer = {
+    _outputStats = enable
+    this
+  }
 
   /**
    * The amount of time given for all scenarios to execute in, other wise the
@@ -84,6 +94,10 @@ trait ScenarioContainer {
 
   final def scenarios  = {
     _scenarios
+  }
+
+  final def outputStats : Boolean = {
+    _outputStats
   }
 
 }

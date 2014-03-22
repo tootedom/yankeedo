@@ -15,12 +15,9 @@
  */
 package org.greencheek.jms.yankeedo.scenarioexecution.producer
 
-import message.CamelMessageSource
 import org.greencheek.jms.yankeedo.structure.actions.{JmsProducerAction => JmsProd, Queue, Topic}
-import java.util.concurrent.atomic.{AtomicBoolean, AtomicLong}
 import akka.camel.{CamelMessage, Oneway, Producer}
-import org.greencheek.jms.yankeedo.scenarioexecution.ProducerFinished
-import akka.actor.{Terminated, ActorRef, Actor, ActorInitializationException}
+import akka.actor.ActorRef
 import akka.actor.Status.Failure
 
 /**
@@ -41,7 +38,9 @@ class AkkaProducer(val jmsAction : JmsProd, responseReciever : ActorRef) extends
 
   override def routeResponse(msg: Any) = {
     msg match {
-      case message : CamelMessage => responseReciever ! msg
+      case message : CamelMessage => {
+        responseReciever ! msg
+      }
       case failure : Failure => {
         responseReciever ! failure
       }

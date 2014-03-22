@@ -56,6 +56,6 @@ class ConsumerExecutor(val scenario : Scenario) extends Actor with Logging {
     ctx.actorOf(Props(
       new AkkaConsumer(scenario.jmsAction.asInstanceOf[Consumer],
                        scenario.jmsAction.asInstanceOf[Consumer].messageProcessor,
-                       messagesToProcess)),"ConsumerActor"+actorNumber)
+                       messagesToProcess,scenario.stats)),"ConsumerActor"+actorNumber)
   }
 }

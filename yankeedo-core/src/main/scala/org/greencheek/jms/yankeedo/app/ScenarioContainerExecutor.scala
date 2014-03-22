@@ -19,8 +19,9 @@ import org.greencheek.jms.yankeedo.structure.scenario.ScenarioContainer
 import java.util.concurrent.{TimeUnit, CountDownLatch}
 import akka.actor.{Props, ActorSystem}
 import scala.concurrent.duration._
-import org.greencheek.jms.yankeedo.scenarioexecution.{StartExecutingScenarios, ScenariosExecutionManager}
+import org.greencheek.jms.yankeedo.scenarioexecution.{TerminateExecutingScenariosDurationEnd, StartExecutingScenarios, ScenariosExecutionManager}
 import grizzled.slf4j.Logging
+import akka.pattern.ask
 
 /**
  * User: dominictootell
@@ -57,10 +58,12 @@ object ScenarioContainerExecutor extends Logging {
     if(hasTimeout) {
       try {
         executedWithoutTimeout = appLatch.await(until.toMillis,TimeUnit.MILLISECONDS)
+        if(!executedWithoutTimeout) {
+          scenarioExecutor ! new TerminateExecutingScenariosDurationEnd(until)
+        }
       } catch {
         case e: Exception => {
           executedWithoutTimeout = false
-
           error("Exception whilst waiting for scenario to complete",e)
         }
       }
@@ -83,6 +86,12 @@ object ScenarioContainerExecutor extends Logging {
     } catch {
       case e : Exception => {
         error("Exception whilst shutting down scenario executor actor system",e)
+      }
+    } finally {
+      if (scenariosToRun.outputStats) {
+        for(scenario <- scenariosToRun.scenarios) {
+          scenario.outputStats()
+        }
       }
     }
 

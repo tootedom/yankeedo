@@ -249,6 +249,16 @@
             <artifactId>slf4j-api</artifactId>
             <version>${slf4j.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.latencyutils</groupId>
+            <artifactId>LatencyUtils</artifactId>
+            <version>1.0.3</version>
+        </dependency>
+        <dependency>
+            <groupId>com.dongxiguo</groupId>
+            <artifactId>fastring_2.10</artifactId>
+            <version>0.2.2</version>
+        </dependency>
         <!-- test -->
         <dependency>
             <groupId>junit</groupId>

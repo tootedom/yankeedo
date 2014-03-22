@@ -24,6 +24,7 @@ import org.greencheek.jms.yankeedo.scenarioexecution.ConsumerFinished
 import scala.concurrent.duration.{Duration, FiniteDuration}
 import scala.concurrent.duration.SECONDS
 import org.greencheek.jms.yankeedo.scenarioexecution.consumer.messageprocessor.CamelMessageProcessor
+import org.LatencyUtils.LatencyStats
 
 /**
  * User: dominictootell
@@ -32,8 +33,8 @@ import org.greencheek.jms.yankeedo.scenarioexecution.consumer.messageprocessor.C
  */
 class AkkaConsumer(val jmsAction : JmsCons,
                    val messageProcessor : CamelMessageProcessor,
-                   val messagesAttemptedToProcess : AtomicLong
-                   ) extends Consumer {
+                   val messagesAttemptedToProcess : AtomicLong,
+                   val stats : LatencyStats) extends Consumer {
   val messagesRecieved = new AtomicLong(0);
   val endpoint  = {
     jmsAction destination match {
@@ -43,7 +44,6 @@ class AkkaConsumer(val jmsAction : JmsCons,
         val buf = new StringBuilder(125)
         buf.append("jms:topic:").append(destName).append("?concurrentConsumers=")
         buf.append(jmsAction.numberOfConsumers)
-//        buf.append("&clientId=").append(clientId)
         buf.append("&durableSubscriptionName=").append(subscriptionName).toString
       }
 
@@ -51,6 +51,8 @@ class AkkaConsumer(val jmsAction : JmsCons,
   }
   val infinite : Boolean = if(messagesAttemptedToProcess.get() == -1) true else false
   val stopped = new AtomicBoolean(false)
+
+  var lastMessageTime = System.nanoTime();
 
   override def autoAck = false
   override def endpointUri = endpoint;
@@ -76,51 +78,66 @@ class AkkaConsumer(val jmsAction : JmsCons,
 
   def receive = {
     case msg: CamelMessage => {
-      // if this is ==0 the message consumer (this/self) will send a stop message
-      // if this is <0 the message then it will just not ack the message, and will send a failure
-      if (stopped.get) {
-        sender ! Failure(new Throwable("Message Consumer Finished.  Not Consuming message, waiting for shutdown"))
-      }
+      try {
+        // if this is ==0 the message consumer (this/self) will send a stop message
+        // if this is <0 the message then it will just not ack the message, and will send a failure
+        if (stopped.get) {
+          sender ! Failure(new Throwable("Message Consumer Finished.  Not Consuming message, waiting for shutdown"))
 
-      val sharedMessageNumber =  { if (infinite) 1 else messagesAttemptedToProcess.decrementAndGet() }
+        }
+        else
+        {
 
-      messagesRecieved.incrementAndGet()
+          val sharedMessageNumber = {
+            if (infinite) 1 else messagesAttemptedToProcess.decrementAndGet()
+          }
 
-      if(sharedMessageNumber<0) {
-        markStopped
-        sender ! Failure(new Throwable("Message Consumer Finished.  Not Consuming message, waiting for shutdown"))
-      } else {
+          messagesRecieved.incrementAndGet()
 
-        var consumeMessage = true
-        var exception : Option[Throwable] = None
-        try {
-          messageProcessor.process(msg)
-        } catch {
-          case t : Throwable => {
-            exception = Some(t)
-            // nothing can be done.  Going to consume the message and log.
-            // problem with messageProcessor.
-            if (messageProcessor.consumerOnError) {
-              consumeMessage = true
-            } else {
-              consumeMessage = false
+          if (sharedMessageNumber < 0) {
+            markStopped
+            sender ! Failure(new Throwable("Message Consumer Finished.  Not Consuming message, waiting for shutdown"))
+          }
+          else
+          {
+
+            var consumeMessage = true
+            var exception: Option[Throwable] = None
+            try {
+              messageProcessor.process(msg)
+            } catch {
+              case t: Throwable => {
+                exception = Some(t)
+                // nothing can be done.  Going to consume the message and log.
+                // problem with messageProcessor.
+                if (messageProcessor.consumerOnError) {
+                  consumeMessage = true
+                } else {
+                  consumeMessage = false
+                }
+              }
+            }
+
+
+
+            if (consumeMessage) {
+              sender ! Ack
+            }
+            else {
+              sender ! Failure(exception.get)
+            }
+
+            if (sharedMessageNumber <= 0) {
+              stop
             }
           }
         }
-
-
-
-        if (consumeMessage) {
-          sender ! Ack
-        }
-        else {
-          sender ! Failure(exception.get)
-        }
-
-        if (sharedMessageNumber <= 0) {
-          stop
-        }
+      } finally {
+        val time = System.nanoTime()
+        stats.recordLatency(time - lastMessageTime)
+        lastMessageTime = time
       }
+
     }
     case _ => {
       messagesRecieved.incrementAndGet()

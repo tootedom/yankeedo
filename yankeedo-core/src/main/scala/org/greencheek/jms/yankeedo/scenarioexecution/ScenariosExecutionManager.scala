@@ -103,21 +103,23 @@ class ScenariosExecutionManager(val applicationLatch : CountDownLatch,
 
   private def stopExecution(): Unit = {
 
-
-    for (system <- scenarioSystems) {
-      try {
-        system.shutdown()
-        system.awaitTermination()
-      } catch {
-        case  e: Exception => {
-          warn("Unable to stop scenario actor system:" + system.name)
+    try {
+      for (system <- scenarioSystems) {
+        try {
+          system.shutdown()
+          system.awaitTermination()
+        } catch {
+          case e: Exception => {
+            warn("Unable to stop scenario actor system:" + system.name)
+          }
         }
       }
+
+      context.stop(self)
     }
-
-    context.stop(self)
-
-    applicationLatch.countDown()
+    finally {
+      applicationLatch.countDown()
+    }
   }
 
 }

@@ -60,6 +60,12 @@ class ProducerExecutor(val scenario : Scenario) extends Actor with Logging {
     }
   }
 
+  val isExecutedByScheduler : Boolean = runForDuration match {
+    case Some(_) => true
+    case None => false
+  }
+
+  var lastMessageTime : Long = System.nanoTime()
 
   override def receive = {
     case ExecutionMonitorFinished => {
@@ -70,19 +76,30 @@ class ProducerExecutor(val scenario : Scenario) extends Actor with Logging {
     }
     case ScenarioStart => {
       started.set(true)
-      producer ! SendMessage
+      if(!isExecutedByScheduler) {
+        producer ! SendMessage
+      }
     }
     case camel : CamelMessage => {
       messagesSendOk.incrementAndGet()
       sendMessage
+      recordStats()
+
     }
     case failure : Failure => {
       messagesNotSendOk.incrementAndGet()
       sendMessage
+      recordStats()
     }
     case Terminated(`producer`) => {
       productMonitorTerminated.set(true)
     }
+  }
+
+  private def recordStats() = {
+    val currTime = System.nanoTime()
+    scenario.stats.recordLatency(currTime - lastMessageTime)
+    lastMessageTime = currTime
   }
 
   override def postStop = {
