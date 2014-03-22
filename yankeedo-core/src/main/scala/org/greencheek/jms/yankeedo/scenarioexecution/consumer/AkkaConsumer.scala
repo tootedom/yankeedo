@@ -25,6 +25,7 @@ import scala.concurrent.duration.{Duration, FiniteDuration}
 import scala.concurrent.duration.SECONDS
 import org.greencheek.jms.yankeedo.scenarioexecution.consumer.messageprocessor.CamelMessageProcessor
 import org.LatencyUtils.LatencyStats
+import grizzled.slf4j.Logging
 
 /**
  * User: dominictootell
@@ -35,7 +36,7 @@ class AkkaConsumer(val jmsAction : JmsCons,
                    val messageProcessor : CamelMessageProcessor,
                    val messagesAttemptedToProcess : AtomicLong,
                    val stats : LatencyStats,
-                   val recordStatsImmediately : Boolean) extends Consumer {
+                   val recordStatsImmediately : Boolean) extends Consumer with Logging {
   val messagesRecieved = new AtomicLong(0);
   val endpoint  = {
     jmsAction destination match {
@@ -86,7 +87,7 @@ class AkkaConsumer(val jmsAction : JmsCons,
         // if this is ==0 the message consumer (this/self) will send a stop message
         // if this is <0 the message then it will just not ack the message, and will send a failure
         if (stopped.get) {
-          sender ! Failure(new Throwable("Message Consumer Finished.  Not Consuming message, waiting for shutdown"))
+          sender ! Failure(new Throwable("Message Consumer Has Been Stopped.  Not Consuming message, waiting for shutdown"))
         }
         else
         {
@@ -110,6 +111,7 @@ class AkkaConsumer(val jmsAction : JmsCons,
             } catch {
               case t: Throwable => {
                 exception = Some(t)
+                warn("Exception calling message processor",t)
                 // nothing can be done.  Going to consume the message and log.
                 // problem with messageProcessor.
                 if (messageProcessor.consumerOnError) {
@@ -130,6 +132,7 @@ class AkkaConsumer(val jmsAction : JmsCons,
             }
 
             if (sharedMessageNumber <= 0) {
+              info("Max number of messages to processed has been reached")
               stop
             }
           }

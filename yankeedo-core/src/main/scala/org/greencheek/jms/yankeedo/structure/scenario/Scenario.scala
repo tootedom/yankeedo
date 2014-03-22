@@ -21,6 +21,7 @@ import concurrent.duration.Duration
 import org.LatencyUtils.LatencyStats.Builder
 import org.LatencyUtils.{PauseDetector, LatencyStats, SimplePauseDetector}
 import org.greencheek.jms.yankeedo.stats.OutputStats
+import java.util.concurrent.TimeUnit
 
 
 object Scenario {
@@ -42,7 +43,8 @@ class Scenario(val runForDuration: Duration = Duration.Inf,
                val name : String
           )
 {
-  val stats : LatencyStats = Builder.create().pauseDetector(Scenario.PAUSE_DETECTOR).build()
+  val stats : LatencyStats = Builder.create().pauseDetector(Scenario.PAUSE_DETECTOR).
+    highestTrackableLatency(TimeUnit.MINUTES.toNanos(1)).build()
 
 
   override def toString = {

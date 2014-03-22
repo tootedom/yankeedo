@@ -41,19 +41,23 @@ object BlockStatsFormatter extends  StatsFormatter {
   }
 
   private def calcMessagePerSec(timeUnit: TimeUnit, value: Double): String = {
-    val doCalc: Boolean = timeUnit match {
-      case TimeUnit.SECONDS => true
-      case TimeUnit.NANOSECONDS => true
-      case TimeUnit.MILLISECONDS => true
-      case TimeUnit.MICROSECONDS => true
-      case _ => false
-    }
-
-    if (doCalc) {
-      val requestsPerSec = ((1 / value) * 1000000000)
-      f"$requestsPerSec%.2f"
-    } else {
+    if(value < 0) {
       " - "
+    } else {
+      val doCalc: Boolean = timeUnit match {
+        case TimeUnit.SECONDS => true
+        case TimeUnit.NANOSECONDS => true
+        case TimeUnit.MILLISECONDS => true
+        case TimeUnit.MICROSECONDS => true
+        case _ => false
+      }
+
+      if (doCalc) {
+        val requestsPerSec = ((1 / value) * 1000000000)
+        f"$requestsPerSec%.2f"
+      } else {
+        " - "
+      }
     }
   }
 
@@ -68,9 +72,49 @@ object BlockStatsFormatter extends  StatsFormatter {
     val minVal: Long = histoData.getMinValue
     val meanVal: Double = histoData.getMean
     val stddevVal: Double = histoData.getStdDeviation
-    val p90Val: Double = histoData.getValueAtPercentile(90.0)
-    val p99Val: Double = histoData.getValueAtPercentile(99.0)
-    val p999Val: Double = histoData.getValueAtPercentile(99.9)
+
+    var pp80Val: Double = -1.0
+    try {
+      pp80Val = histoData.getValueAtPercentile(80.0)
+    } catch {
+      case e: ArrayIndexOutOfBoundsException => {
+        pp80Val = -1.0
+      }
+    }
+    //
+
+    var pp90Val: Double = -1.0
+        try {
+          pp90Val = histoData.getValueAtPercentile(90.0)
+        } catch {
+          case e: ArrayIndexOutOfBoundsException => {
+            pp90Val = -1.0
+          }
+        }
+    //
+    var pp99Val: Double = -1.0
+        try {
+          pp99Val = histoData.getValueAtPercentile(99.0)
+        } catch {
+          case e: ArrayIndexOutOfBoundsException => {
+            pp99Val = -1.0
+          }
+        }
+
+    var pp999Val: Double = -1.0
+        try {
+          pp999Val = histoData.getValueAtPercentile(99.9)
+        } catch {
+          case e: ArrayIndexOutOfBoundsException => {
+            pp999Val = -1.0
+          }
+        }
+
+
+    val p80Val: Double = pp80Val
+    val p90Val: Double = pp90Val
+    val p99Val: Double = pp99Val
+    val p999Val: Double = pp999Val
     val total: Double = histoData.getTotalCount
 
 
@@ -83,6 +127,7 @@ ${formatLine("min value:", toTimeUnit(minVal, timeunit), abrev)}
 ${formatLine("max value:", toTimeUnit(maxVal, timeunit), abrev)}
 ${formatLine("mean:", toTimeUnit(meanVal, timeunit), abrev + " (" + calcMessagePerSec(timeunit, meanVal) + " msg/sec)")}
 ${formatLine("stddev:", toTimeUnit(stddevVal, timeunit), abrev + " (" + calcMessagePerSec(timeunit, stddevVal) + " msg/sec)")}
+${formatLine("80%ile:", toTimeUnit(p80Val, timeunit), abrev + " (" + calcMessagePerSec(timeunit, p80Val) + " msg/sec)")}
 ${formatLine("90%ile:", toTimeUnit(p90Val, timeunit), abrev + " (" + calcMessagePerSec(timeunit, p90Val) + " msg/sec)")}
 ${formatLine("99%ile:", toTimeUnit(p99Val, timeunit), abrev + " (" + calcMessagePerSec(timeunit, p99Val) + " msg/sec)")}
 ${formatLine("99.9%ile:", toTimeUnit(p999Val, timeunit), abrev + " (" + calcMessagePerSec(timeunit, p999Val) + " msg/sec)")}
@@ -94,18 +139,30 @@ ${rightPad("====================================================================
   }
 
   private def toTimeUnit(value: Double, timeUnit: TimeUnit): Double = {
-    val duration = Duration(value, TimeUnit.NANOSECONDS)
-    duration.toUnit(timeUnit)
+    if(value<0) {
+      -1
+    } else {
+      val duration = Duration(value, TimeUnit.NANOSECONDS)
+      duration.toUnit(timeUnit)
+    }
   }
 
   private def toTimeUnit(value: Long, timeUnit: TimeUnit): Double = {
-    val duration = Duration(value, TimeUnit.NANOSECONDS)
-    duration.toUnit(timeUnit)
+    if(value<0) {
+      -1
+    } else {
+      val duration = Duration(value, TimeUnit.NANOSECONDS)
+      duration.toUnit(timeUnit)
+    }
   }
 
 
   private def formatLine(name: String, value: Double, trail: String = ""): Fastring = {
-    fast"${rightPad(name, OUTPUT_LENGTH - 32)} ${leftPad(printable(value), 7)}${trail}"
+    if(value < 0) {
+      fast"${rightPad(name, OUTPUT_LENGTH - 32)} ${leftPad(" - ", 7)}${trail}"
+    } else {
+      fast"${rightPad(name, OUTPUT_LENGTH - 32)} ${leftPad(printable(value), 7)}${trail}"
+    }
 
   }
 
@@ -129,13 +186,13 @@ ${rightPad("====================================================================
 
   private def getShortNameForTimeUnit(timeUnit: TimeUnit): String = {
     timeUnit match {
-      case TimeUnit.SECONDS => "s"
-      case TimeUnit.DAYS => "d"
-      case TimeUnit.HOURS => "h"
-      case TimeUnit.MILLISECONDS => "ms"
-      case TimeUnit.NANOSECONDS => "ns"
-      case TimeUnit.MINUTES => "m"
-      case TimeUnit.MICROSECONDS => "µ"
+      case TimeUnit.SECONDS => " s"
+      case TimeUnit.DAYS => " d"
+      case TimeUnit.HOURS => " h"
+      case TimeUnit.MILLISECONDS => " ms"
+      case TimeUnit.NANOSECONDS => " ns"
+      case TimeUnit.MINUTES => " m"
+      case TimeUnit.MICROSECONDS => " µ"
     }
   }
 
