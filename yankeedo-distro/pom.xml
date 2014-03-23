@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>org.greencheek.mq</groupId>
 		<artifactId>yankeedo-parent</artifactId>
-		<version>0.1.4</version>
+		<version>0.1.5-SNAPSHOT</version>
 	</parent>
 	<artifactId>yankeedo-distro</artifactId>
 	<packaging>pom</packaging>
