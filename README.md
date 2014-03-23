@@ -36,15 +36,15 @@ You can use the library in two ways:
 
 The distribution can be found in either *.tar.gz* or *.zip*:
 
-- http://search.maven.org/remotecontent?filepath=org/greencheek/mq/yankeedo-distro/0.1.3/yankeedo-distro-0.1.3-bundle.tar.gz
-- http://search.maven.org/remotecontent?filepath=org/greencheek/mq/yankeedo-distro/0.1.3/yankeedo-distro-0.1.3-bundle.zip
+- http://search.maven.org/remotecontent?filepath=org/greencheek/mq/yankeedo-distro/0.1.4/yankeedo-distro-0.1.4-bundle.tar.gz
+- http://search.maven.org/remotecontent?filepath=org/greencheek/mq/yankeedo-distro/0.1.4/yankeedo-distro-0.1.4-bundle.zip
 
 The maven dependency is on maven central and can be included with the following:
 
     <dependency>
         <groupId>org.greencheek.mq</groupId>
         <artifactId>yankeedo-core</artifactId>
-        <version>0.1.3</version>
+        <version>0.1.4</version>
         <scope>test</scope>
     </dependency>
     
@@ -53,7 +53,7 @@ If you want to use the extra message sources (discussed later), can be included 
     <dependency>
         <groupId>org.greencheek.mq</groupId>
         <artifactId>yankeedo-messagesources</artifactId>
-        <version>0.1.3</version>
+        <version>0.1.4</version>
         <scope>test</scope>
     </dependency>
     
@@ -440,6 +440,40 @@ to handle the incoming consumer
 
 
 ----
+
+### Statistics ###
+
+
+
+    ================================================================================
+    Consumer messages scenario
+    ================================================================================
+    number of messages:                               100.00
+    min value:                                          2.00 ms
+    max value:                                        150.99 ms
+    mean:                                              82.28 ms (12.15 msg/sec)
+    stddev:                                            57.75 ms (17.32 msg/sec)
+    80.00%ile:                                        148.90 ms (6.72 msg/sec)
+    90.00%ile:                                        149.95 ms (6.67 msg/sec)
+    99.00%ile:                                        150.99 ms (6.62 msg/sec)
+    99.90%ile:                                        150.99 ms (6.62 msg/sec)
+
+    ================================================================================
+
+    ================================================================================
+    Product 100 messages scenario
+    ================================================================================
+    number of messages:                               100.00
+    min value:                                          0.00 ms
+    max value:                                        152.04 ms
+    mean:                                              82.05 ms (12.19 msg/sec)
+    stddev:                                            59.07 ms (16.93 msg/sec)
+    80.00%ile:                                        150.99 ms (6.62 msg/sec)
+    90.00%ile:                                        150.99 ms (6.62 msg/sec)
+    99.00%ile:                                        150.99 ms (6.62 msg/sec)
+    99.90%ile:                                        152.04 ms (6.58 msg/sec)
+
+    ================================================================================
 
 ### Distribution ###
 
