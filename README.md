@@ -515,7 +515,7 @@ The statistics output looks as follows.  There will be a set of statistics for e
 - The max duration
 - mean, stddev, 80, 90, 99, and 99.9th percentile:
 
-
+````
     ================================================================================
     Consumer messages scenario
     ================================================================================
@@ -545,6 +545,7 @@ The statistics output looks as follows.  There will be a set of statistics for e
     99.90%ile:                                        152.04 ms (6.58 msg/sec)
 
     ================================================================================
+````
 
 ### Distribution ###
 
