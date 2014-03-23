@@ -17,9 +17,11 @@ package org.greencheek.jms.yankeedo.stats
 
 import java.util.concurrent.TimeUnit
 import org.LatencyUtils.LatencyStats
-import org.HdrHistogram.HistogramData
+import org.HdrHistogram.{HistogramData, HistogramIterationValue}
 import scala.concurrent.duration.Duration
 import com.dongxiguo.fastring.Fastring.Implicits._
+import scala.collection.JavaConversions._
+import scala.collection.SortedSet
 
 /**
  * Created by dominictootell on 22/03/2014.
@@ -61,64 +63,77 @@ object BlockStatsFormatter extends  StatsFormatter {
     }
   }
 
-  private def outputStats(name: String,
-                          stats: LatencyStats,
-                          timeunit: TimeUnit): String = {
+  private def getPercentiles(histoData : HistogramData) : SortedSet[Double] = {
+    val p : HistogramData#Percentiles = histoData.percentiles(1)
 
-    val abrev = getShortNameForTimeUnit(timeunit)
-
-    val histoData: HistogramData = stats.getAccumulatedHistogram.getHistogramData
-    val maxVal: Long = histoData.getMaxValue
-    val minVal: Long = histoData.getMinValue
-    val meanVal: Double = histoData.getMean
-    val stddevVal: Double = histoData.getStdDeviation
+    val defaultSortedSet = scala.collection.mutable.SortedSet[Double]()
+    for(value : HistogramIterationValue <-  p.iterator()) {
+      val percentageValue = value.getPercentile
+      if(percentageValue>=60) {
+        defaultSortedSet += percentageValue
+      }
+    }
 
     var pp80Val: Double = -1.0
     try {
       pp80Val = histoData.getValueAtPercentile(80.0)
     } catch {
       case e: ArrayIndexOutOfBoundsException => {
-        pp80Val = -1.0
+       return defaultSortedSet
       }
     }
     //
 
     var pp90Val: Double = -1.0
-        try {
-          pp90Val = histoData.getValueAtPercentile(90.0)
-        } catch {
-          case e: ArrayIndexOutOfBoundsException => {
-            pp90Val = -1.0
-          }
-        }
+    try {
+      pp90Val = histoData.getValueAtPercentile(90.0)
+    } catch {
+      case e: ArrayIndexOutOfBoundsException => {
+        return defaultSortedSet
+      }
+    }
     //
     var pp99Val: Double = -1.0
-        try {
-          pp99Val = histoData.getValueAtPercentile(99.0)
-        } catch {
-          case e: ArrayIndexOutOfBoundsException => {
-            pp99Val = -1.0
-          }
-        }
+    try {
+      pp99Val = histoData.getValueAtPercentile(99.0)
+    } catch {
+      case e: ArrayIndexOutOfBoundsException => {
+        return defaultSortedSet
+      }
+    }
 
     var pp999Val: Double = -1.0
-        try {
-          pp999Val = histoData.getValueAtPercentile(99.9)
-        } catch {
-          case e: ArrayIndexOutOfBoundsException => {
-            pp999Val = -1.0
-          }
-        }
+    try {
+      pp999Val = histoData.getValueAtPercentile(99.9)
+    } catch {
+      case e: ArrayIndexOutOfBoundsException => {
+        return defaultSortedSet
+      }
+    }
+
+    SortedSet(80.0,90.0,99.0,99.9)
+  }
+
+  private def outputStats(name: String,
+                          stats: LatencyStats,
+                          timeunit: TimeUnit): String = {
+
+    val abrev = getShortNameForTimeUnit(timeunit)
+    stats.forceIntervalUpdate()
+    val histoData: HistogramData = stats.getAccumulatedHistogram.getHistogramData
+
+    val percentiles : SortedSet[Double] = getPercentiles(histoData)
+
+    val maxVal: Long = histoData.getMaxValue
+    val minVal: Long = histoData.getMinValue
+    val meanVal: Double = histoData.getMean
+    val stddevVal: Double = histoData.getStdDeviation
 
 
-    val p80Val: Double = pp80Val
-    val p90Val: Double = pp90Val
-    val p99Val: Double = pp99Val
-    val p999Val: Double = pp999Val
     val total: Double = histoData.getTotalCount
 
-
-    val s = fast"""
+    val percentilesStringBuilder = new StringBuilder(1000)
+    percentilesStringBuilder.append(fast"""
 ${rightPad("================================================================================", 80)}
 ${rightPad(name, 80)}
 ${rightPad("================================================================================", 80)}
@@ -126,17 +141,35 @@ ${formatLine("number of messages: ", total)}
 ${formatLine("min value:", toTimeUnit(minVal, timeunit), abrev)}
 ${formatLine("max value:", toTimeUnit(maxVal, timeunit), abrev)}
 ${formatLine("mean:", toTimeUnit(meanVal, timeunit), abrev + " (" + calcMessagePerSec(timeunit, meanVal) + " msg/sec)")}
-${formatLine("stddev:", toTimeUnit(stddevVal, timeunit), abrev + " (" + calcMessagePerSec(timeunit, stddevVal) + " msg/sec)")}
-${formatLine("80%ile:", toTimeUnit(p80Val, timeunit), abrev + " (" + calcMessagePerSec(timeunit, p80Val) + " msg/sec)")}
-${formatLine("90%ile:", toTimeUnit(p90Val, timeunit), abrev + " (" + calcMessagePerSec(timeunit, p90Val) + " msg/sec)")}
-${formatLine("99%ile:", toTimeUnit(p99Val, timeunit), abrev + " (" + calcMessagePerSec(timeunit, p99Val) + " msg/sec)")}
-${formatLine("99.9%ile:", toTimeUnit(p999Val, timeunit), abrev + " (" + calcMessagePerSec(timeunit, p999Val) + " msg/sec)")}
-${rightPad("================================================================================", 80)}
-""".toString
+${formatLine("stddev:", toTimeUnit(stddevVal, timeunit), abrev + " (" + calcMessagePerSec(timeunit, stddevVal) + " msg/sec)")}\n""".toString)
+
+    percentilesStringBuilder.append(createPercentilesString(percentiles,timeunit,abrev,histoData))
+
+//${formatLine("80%ile:", toTimeUnit(p80Val, timeunit), abrev + " (" + calcMessagePerSec(timeunit, p80Val) + " msg/sec)")}
+//${formatLine("90%ile:", toTimeUnit(p90Val, timeunit), abrev + " (" + calcMessagePerSec(timeunit, p90Val) + " msg/sec)")}
+//${formatLine("99%ile:", toTimeUnit(p99Val, timeunit), abrev + " (" + calcMessagePerSec(timeunit, p99Val) + " msg/sec)")}
+//${formatLine("99.9%ile:", toTimeUnit(p999Val, timeunit), abrev + " (" + calcMessagePerSec(timeunit, p999Val) + " msg/sec)")}
+    percentilesStringBuilder.append(fast"""\n${rightPad("================================================================================", 80)}\n""".toString)
+//""".toString
 
 
-    s.toString
+    percentilesStringBuilder.toString
   }
+
+  private def createPercentilesString(percentiles : SortedSet[Double],timeunit : TimeUnit,
+                                      abrev : String, histdata: HistogramData) : String = {
+    val builder : StringBuilder = new StringBuilder(500)
+    for(percentile : Double <- percentiles) {
+      val pString = f"$percentile%.2f"+"%ile:"
+      val pValue = histdata.getValueAtPercentile(percentile)
+      builder.append(
+      fast"""${formatLine(pString, toTimeUnit(pValue, timeunit), abrev + " (" + calcMessagePerSec(timeunit, pValue) + " msg/sec)")}\n""".toString())
+    }
+
+    builder.toString
+  }
+
+
 
   private def toTimeUnit(value: Double, timeUnit: TimeUnit): Double = {
     if(value<0) {

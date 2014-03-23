@@ -21,6 +21,7 @@ import org.greencheek.jms.yankeedo.structure.actions.{JmsConsumerAction => Consu
 import org.greencheek.jms.yankeedo.scenarioexecution._
 import java.util.concurrent.atomic.AtomicLong
 import grizzled.slf4j.Logging
+import org.greencheek.jms.yankeedo.stats.TimingServices
 
 
 /**
@@ -28,7 +29,8 @@ import grizzled.slf4j.Logging
  * Date: 06/01/2013
  * Time: 15:56
  */
-class ConsumerExecutor(val scenario : Scenario) extends Actor with Logging {
+class ConsumerExecutor(val scenario : Scenario,
+                       val statsRecorder : TimingServices) extends Actor with Logging {
 
 
   def receive = {
@@ -56,6 +58,6 @@ class ConsumerExecutor(val scenario : Scenario) extends Actor with Logging {
     ctx.actorOf(Props(
       new AkkaConsumer(scenario.jmsAction.asInstanceOf[Consumer],
                        scenario.jmsAction.asInstanceOf[Consumer].messageProcessor,
-                       messagesToProcess,scenario.stats,scenario.recordStatsImmediately)),"ConsumerActor"+actorNumber)
+                       messagesToProcess,statsRecorder)),"ConsumerActor"+actorNumber)
   }
 }

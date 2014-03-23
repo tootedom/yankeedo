@@ -255,6 +255,11 @@
             <version>1.0.3</version>
         </dependency>
         <dependency>
+            <groupId>org.hdrhistogram</groupId>
+            <artifactId>HdrHistogram</artifactId>
+            <version>1.0.9</version>
+        </dependency>
+        <dependency>
             <groupId>com.dongxiguo</groupId>
             <artifactId>fastring_2.10</artifactId>
             <version>0.2.2</version>

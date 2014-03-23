@@ -20,10 +20,10 @@ import org.specs2.runner.JUnitRunner
 import org.junit.runner.RunWith
 import org.greencheek.jms.yankeedo.structure.dsl.Dsl._
 import scala.concurrent.duration._
-import org.greencheek.jms.util.CountingMessageProcessor
 import java.util.concurrent.TimeUnit
 import scala.concurrent.duration.TimeUnit
 import org.greencheek.jms.yankeedo.stats.DefaultOutputStats
+import org.greencheek.jms.util.CountingMessageProcessor
 
 /**
  * Created by dominictootell on 16/03/2014.
@@ -38,7 +38,6 @@ class TestScenarioContainerExecutorSpec extends BrokerBasedSpec {
 
       val consumerScenario1 = createScenario(
         "consumer message with a message processor" connect_to "tcp://localhost:" +  port + "?daemon=true&jms.closeTimeout=200"
-          recordStatsImmediately false
           until_no_of_messages_consumed -1
           consume from queue "scenariocontainer"
           with_message_consumer messageProcessor
@@ -47,7 +46,6 @@ class TestScenarioContainerExecutorSpec extends BrokerBasedSpec {
 
       val producerScenario1 = createScenario(
         "produce 10 message scenario" connect_to "tcp://localhost:" +  port + "?daemon=true&jms.closeTimeout=200"
-          recordStatsImmediately false
           until_no_of_messages_sent -1
           produce to queue "scenariocontainer"
           with_per_message_delay_of Duration(1,SECONDS)
@@ -55,7 +53,7 @@ class TestScenarioContainerExecutorSpec extends BrokerBasedSpec {
       )
 
       val scenarioContainer = ScenarioContainer(consumerScenario1,producerScenario1)
-      scenarioContainer.runFor(Duration(6,SECONDS)).outputStatsOptions(Some(new DefaultOutputStats()))
+      scenarioContainer.runFor(Duration(6,SECONDS)).outputStatsOptions(Some(new DefaultOutputStats())).recordFirstMessageTiming(false).useNanoTiming(false)
 
 
       ScenarioContainerExecutor.executeScenarios(scenarioContainer) should beEqualTo(1)
@@ -107,7 +105,6 @@ class TestScenarioContainerExecutorSpec extends BrokerBasedSpec {
 
       val consumerScenario1 = createScenario(
         "consume messages as fast as possible" connect_to "tcp://localhost:" +  port + "?daemon=true&jms.closeTimeout=200"
-          recordStatsImmediately false
           until_no_of_messages_consumed -1
           consume from queue "fastqueue"
           with_message_consumer messageProcessor
@@ -116,14 +113,13 @@ class TestScenarioContainerExecutorSpec extends BrokerBasedSpec {
 
       val producerScenario1 = createScenario(
         "produce messages,as fast as possible, for at least 10 seconds" connect_to "tcp://localhost:" +  port + "?daemon=true&jms.closeTimeout=200"
-          recordStatsImmediately false
           until_no_of_messages_sent -1
           produce to queue "fastqueue"
           with_persistent_delivery
       )
 
       val scenarioContainer = ScenarioContainer(consumerScenario1,producerScenario1)
-      scenarioContainer.runFor(Duration(5,SECONDS)).outputStatsOptions(Some(new DefaultOutputStats()))
+      scenarioContainer.runFor(Duration(5,SECONDS)).outputStatsOptions(Some(new DefaultOutputStats())).recordFirstMessageTiming(false)
 
       ScenarioContainerExecutor.executeScenarios(scenarioContainer,Duration(5,SECONDS)) should beEqualTo(0)
 

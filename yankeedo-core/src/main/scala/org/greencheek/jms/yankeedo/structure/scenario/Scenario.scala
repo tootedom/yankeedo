@@ -18,10 +18,9 @@ package org.greencheek.jms.yankeedo.structure.scenario
 import org.greencheek.jms.yankeedo.structure.actions.JmsAction
 import org.greencheek.jms.yankeedo.config.JmsConfiguration
 import concurrent.duration.Duration
-import org.LatencyUtils.LatencyStats.Builder
-import org.LatencyUtils.{PauseDetector, LatencyStats, SimplePauseDetector}
-import org.greencheek.jms.yankeedo.stats.OutputStats
-import java.util.concurrent.TimeUnit
+import org.LatencyUtils.{PauseDetector, SimplePauseDetector}
+import org.greencheek.jms.yankeedo.stats.{TimingServices, OutputStats}
+import java.util.concurrent.atomic.AtomicReference
 
 
 object Scenario {
@@ -39,13 +38,16 @@ class Scenario(val runForDuration: Duration = Duration.Inf,
                val jmsUrl : String,
                val jmsAction : JmsAction,
                val jmsConfiguration : Option[JmsConfiguration],
-               val recordStatsImmediately : Boolean,
                val name : String
           )
 {
-  val stats : LatencyStats = Builder.create().pauseDetector(Scenario.PAUSE_DETECTOR).
-    highestTrackableLatency(TimeUnit.MINUTES.toNanos(1)).build()
 
+  private val _timingService : AtomicReference[Option[TimingServices]] = new AtomicReference[Option[TimingServices]](None)
+
+
+  def setTimingService(timingService : Option[TimingServices]) : Unit = {
+    _timingService.set(timingService)
+  }
 
   override def toString = {
     val buf = new StringBuilder
@@ -68,12 +70,19 @@ class Scenario(val runForDuration: Duration = Duration.Inf,
 
   // ADD OUTPUTTING THE STATS
   def outputStats(statsConfig : OutputStats) : Unit = {
-    val statsFormat : String = statsConfig.formatter.formatToString(name,statsConfig.timeUnit,stats)
-    try {
-      statsConfig.writer.write(statsFormat)
-      statsConfig.writer.flush()
-    } catch {
-      case e: Exception => {
+    _timingService.get match {
+      case Some(stats) => {
+        val statsFormat : String = statsConfig.formatter.formatToString(name,statsConfig.timeUnit,stats.stats)
+        try {
+          statsConfig.writer.write(statsFormat)
+          statsConfig.writer.flush()
+        } catch {
+          case e: Exception => {
+
+          }
+        }
+      }
+      case None => {
 
       }
     }

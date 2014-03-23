@@ -37,35 +37,32 @@ object ScenarioBuilder {
   class ScenarioBuilder[HASJMSURL,HASACTION,HASNAME](val duration :  Duration = DEFAULT_DURATION_OF_SCENARIO,
                                    val messages : Long = DEFAULT_NUMBER_OF_MESSAGES_TO_SEND,
                                    val numberOfActors : Int = DEFAULT_NUMBER_OF_ACTORS,
-                                   val recordStatsImmediately : Boolean = false,
                                    val jmsurl : Option[String],
                                    val jmsAction : Option[JmsAction],
                                    val jmsConfiguration : Option[JmsConfiguration],
                                    val scenarioName : String)
   {
-    def named(name : String) = new ScenarioBuilder[HASJMSURL,HASACTION,TRUE](duration,messages,numberOfActors,recordStatsImmediately,jmsurl,
+    def named(name : String) = new ScenarioBuilder[HASJMSURL,HASACTION,TRUE](duration,messages,numberOfActors,jmsurl,
                                                                         jmsAction,jmsConfiguration,name)
 
     def runForDuration(millis : Duration)  = new ScenarioBuilder[HASJMSURL,HASACTION,HASNAME](millis,messages,numberOfActors,
-                                                                                  recordStatsImmediately,jmsurl,
+                                                                                  jmsurl,
                                                                                   jmsAction,jmsConfiguration,scenarioName)
-    def runForMessages(messages : Long) = new ScenarioBuilder[HASJMSURL,HASACTION,HASNAME](duration,messages,numberOfActors,recordStatsImmediately,jmsurl,
+    def runForMessages(messages : Long) = new ScenarioBuilder[HASJMSURL,HASACTION,HASNAME](duration,messages,numberOfActors,jmsurl,
                                                                                    jmsAction,jmsConfiguration,scenarioName)
-    def runWithConcurrency(concurrency : Int) = new ScenarioBuilder[HASJMSURL,HASACTION,HASNAME](duration,messages,concurrency,recordStatsImmediately,jmsurl,
+    def runWithConcurrency(concurrency : Int) = new ScenarioBuilder[HASJMSURL,HASACTION,HASNAME](duration,messages,concurrency,jmsurl,
                                                                                         jmsAction,jmsConfiguration,scenarioName)
-    def withConnectionUrl(connectionUrl : String) = new ScenarioBuilder[TRUE,HASACTION,HASNAME](duration,messages,numberOfActors,recordStatsImmediately,Some(connectionUrl),
+    def withConnectionUrl(connectionUrl : String) = new ScenarioBuilder[TRUE,HASACTION,HASNAME](duration,messages,numberOfActors,Some(connectionUrl),
                                                                                         jmsAction,jmsConfiguration,scenarioName)
-    def withJmsAction(jmsAction : JmsAction) = new ScenarioBuilder[HASJMSURL, TRUE,HASNAME](duration,messages,numberOfActors,recordStatsImmediately,jmsurl,
+    def withJmsAction(jmsAction : JmsAction) = new ScenarioBuilder[HASJMSURL, TRUE,HASNAME](duration,messages,numberOfActors,jmsurl,
       Some(jmsAction),jmsConfiguration,scenarioName)
 
-    def recordStatsImmediately(recordImmediately : Boolean) = new ScenarioBuilder[HASJMSURL, HASACTION,HASNAME](duration,messages,numberOfActors,recordImmediately,jmsurl,
-      jmsAction,jmsConfiguration,scenarioName)
   }
 
   implicit def enableBuild(builder:ScenarioBuilder[TRUE,TRUE,TRUE]) = new {
     def build() =
       new Scenario(builder.duration, builder.messages, builder.numberOfActors, builder.jmsurl.get,builder.jmsAction.get,
-        builder.jmsConfiguration,builder.recordStatsImmediately,builder.scenarioName);
+        builder.jmsConfiguration,builder.scenarioName);
   }
 
   def builder(scenarioName : String) = new ScenarioBuilder[FALSE,FALSE,TRUE](scenarioName = scenarioName,jmsurl = None, jmsAction = None, jmsConfiguration = None)

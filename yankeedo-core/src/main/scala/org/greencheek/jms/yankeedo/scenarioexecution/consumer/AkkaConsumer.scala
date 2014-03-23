@@ -26,6 +26,7 @@ import scala.concurrent.duration.SECONDS
 import org.greencheek.jms.yankeedo.scenarioexecution.consumer.messageprocessor.CamelMessageProcessor
 import org.LatencyUtils.LatencyStats
 import grizzled.slf4j.Logging
+import org.greencheek.jms.yankeedo.stats.TimingServices
 
 /**
  * User: dominictootell
@@ -35,8 +36,7 @@ import grizzled.slf4j.Logging
 class AkkaConsumer(val jmsAction : JmsCons,
                    val messageProcessor : CamelMessageProcessor,
                    val messagesAttemptedToProcess : AtomicLong,
-                   val stats : LatencyStats,
-                   val recordStatsImmediately : Boolean) extends Consumer with Logging {
+                   val statsRecorder : TimingServices) extends Consumer with Logging {
   val messagesRecieved = new AtomicLong(0);
   val endpoint  = {
     jmsAction destination match {
@@ -53,11 +53,6 @@ class AkkaConsumer(val jmsAction : JmsCons,
   }
   val infinite : Boolean = if(messagesAttemptedToProcess.get() == -1) true else false
   val stopped = new AtomicBoolean(false)
-
-  var lastMessageTime : Long = recordStatsImmediately match {
-    case true => System.nanoTime()
-    case false => -1
-  }
 
   override def autoAck = false
   override def endpointUri = endpoint;
@@ -83,10 +78,12 @@ class AkkaConsumer(val jmsAction : JmsCons,
 
   def receive = {
     case msg: CamelMessage => {
+      var isStopped : Boolean = false
       try {
         // if this is ==0 the message consumer (this/self) will send a stop message
         // if this is <0 the message then it will just not ack the message, and will send a failure
         if (stopped.get) {
+          isStopped = true
           sender ! Failure(new Throwable("Message Consumer Has Been Stopped.  Not Consuming message, waiting for shutdown"))
         }
         else
@@ -99,6 +96,7 @@ class AkkaConsumer(val jmsAction : JmsCons,
           messagesRecieved.incrementAndGet()
 
           if (sharedMessageNumber < 0) {
+            isStopped = true
             markStopped
             sender ! Failure(new Throwable("Message Consumer Finished.  Not Consuming message, waiting for shutdown"))
           }
@@ -138,16 +136,11 @@ class AkkaConsumer(val jmsAction : JmsCons,
           }
         }
       } finally {
-        val time = System.nanoTime()
-        if(lastMessageTime != -1) {
-          stats.recordLatency(time - lastMessageTime)
+        if(!isStopped) {
+          statsRecorder.recordStats()
         }
-        lastMessageTime = time
       }
 
-    }
-    case _ => {
-      messagesRecieved.incrementAndGet()
     }
   }
 

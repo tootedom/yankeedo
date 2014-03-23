@@ -24,7 +24,7 @@ import akka.camel.CamelMessage
 import akka.actor.Status.Failure
 import grizzled.slf4j.Logging
 import scala.concurrent.duration._
-
+import org.greencheek.jms.yankeedo.stats.TimingServices
 
 
 /**
@@ -32,7 +32,8 @@ import scala.concurrent.duration._
  * Date: 06/01/2013
  * Time: 18:26
  */
-class ProducerExecutor(val scenario : Scenario) extends Actor with Logging {
+class ProducerExecutor(val scenario : Scenario,
+                       val statsRecorder : TimingServices) extends Actor with Logging {
 
   val messagesSendOk = new AtomicLong(0)
   val messagesNotSendOk = new AtomicLong(0)
@@ -65,11 +66,6 @@ class ProducerExecutor(val scenario : Scenario) extends Actor with Logging {
     case None => false
   }
 
-  var lastMessageTime : Long = scenario.recordStatsImmediately match {
-    case true => System.nanoTime()
-    case false => -1
-  }
-
   override def receive = {
     case ExecutionMonitorFinished => {
       started.set(false)
@@ -100,11 +96,9 @@ class ProducerExecutor(val scenario : Scenario) extends Actor with Logging {
   }
 
   private def recordStats() = {
-    val currTime = System.nanoTime()
-    if(lastMessageTime != -1) {
-      scenario.stats.recordLatency(currTime - lastMessageTime)
+    if(started.get) {
+      statsRecorder.recordStats()
     }
-    lastMessageTime = currTime
   }
 
   override def postStop = {

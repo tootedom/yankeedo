@@ -17,7 +17,7 @@ package org.greencheek.jms.yankeedo.scenarioexecution
 
 import akka.actor._
 import consumer.ConsumerExecutor
-import org.greencheek.jms.yankeedo.structure.scenario.{ScenarioContainer}
+import org.greencheek.jms.yankeedo.structure.scenario.{Scenario, ScenarioContainer}
 import java.util.concurrent.{CountDownLatch}
 import org.greencheek.jms.yankeedo.structure.actions.{JmsProducerAction, JmsConsumerAction}
 import collection.mutable.ArrayBuffer
@@ -27,6 +27,8 @@ import producer.ProducerExecutor
 import scala.Some
 import concurrent.duration.FiniteDuration
 import grizzled.slf4j.Logging
+import scala.collection.mutable.Map
+import org.greencheek.jms.yankeedo.stats.TimingServices
 
 /**
  * User: dominictootell
@@ -37,7 +39,7 @@ class ScenariosExecutionManager(val applicationLatch : CountDownLatch,
                                 val scenarioContainer : ScenarioContainer) extends Actor with Logging {
 
   val scenariosRunning = new AtomicLong(scenarioContainer.size)
-
+  val scenarioTimers = Map[Scenario,TimingServices]()
 
 
   val scenarioSystems : List[ActorSystem] = {
@@ -70,10 +72,13 @@ class ScenariosExecutionManager(val applicationLatch : CountDownLatch,
     case StartExecutingScenarios => {
       for ( (executionScenario,i) <- scenarioContainer.scenarios.zipWithIndex) {
         val system = scenarioSystems(i)
+        val timingServices = scenarioContainer.createTimingServices
+        scenarioTimers += executionScenario -> timingServices
+        executionScenario.setTimingService(Some(timingServices))
         val scenarioActor =
           executionScenario.jmsAction match {
-            case x:JmsConsumerAction => system.actorOf(Props(new ConsumerExecutor(executionScenario)),"ConsumerExecutor")
-            case x:JmsProducerAction => system.actorOf(Props(new ProducerExecutor(executionScenario)),"ProducerExecutor")
+            case x:JmsConsumerAction => system.actorOf(Props(new ConsumerExecutor(executionScenario,timingServices)),"ConsumerExecutor")
+            case x:JmsProducerAction => system.actorOf(Props(new ProducerExecutor(executionScenario,timingServices)),"ProducerExecutor")
           }
 
         context.watch(scenarioActor)

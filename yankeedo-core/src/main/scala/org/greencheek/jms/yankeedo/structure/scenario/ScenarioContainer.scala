@@ -16,7 +16,7 @@
 package org.greencheek.jms.yankeedo.structure.scenario
 
 import concurrent.duration.Duration
-import org.greencheek.jms.yankeedo.stats.{DefaultOutputStats, OutputStats}
+import org.greencheek.jms.yankeedo.stats.{TimingServices, DefaultOutputStats, OutputStats}
 
 /**
  * User: dominictootell
@@ -31,6 +31,8 @@ trait ScenarioContainer {
   @volatile private var _outputStatsOptions : Option[OutputStats] = None;
   @volatile private var _totalDuration : Duration = Duration.Inf
   @volatile private var _scenarios : Seq[Scenario] = Nil
+  @volatile private var _useNanoTimings : Boolean = true
+  @volatile private var _recordFirstMessageTiming : Boolean = false
 
   /**
    * The number of defined scenarios
@@ -38,7 +40,15 @@ trait ScenarioContainer {
    */
   final def size : Int = this.scenarios.size
 
+  final def useNanoTiming(useNanoTiming : Boolean) : ScenarioContainer =  {
+    _useNanoTimings = useNanoTiming
+    this
+  }
 
+  final def recordFirstMessageTiming(recordFirstMessageTiming : Boolean) : ScenarioContainer = {
+    _recordFirstMessageTiming = recordFirstMessageTiming
+    this
+  }
 
   final def outputStatsOptions(outputStatsOption : Option[OutputStats] ) : ScenarioContainer = {
     _outputStatsOptions = outputStatsOption
@@ -53,7 +63,7 @@ trait ScenarioContainer {
    * output stats to the defaults (System.out)
    * @return
    */
-  final def outputStatus() : ScenarioContainer = {
+  final def outputStats() : ScenarioContainer = {
     _outputStatsOptions = Some(new DefaultOutputStats)
     _outputStatsEnabled = true
     this
@@ -116,6 +126,18 @@ trait ScenarioContainer {
 
   final def outputStatsOptions : Option[OutputStats] = {
     _outputStatsOptions
+  }
+
+  final def useNanoTiming : Boolean = {
+    _useNanoTimings
+  }
+
+  final def recordFirstMessageTiming : Boolean = {
+    _recordFirstMessageTiming
+  }
+
+  final def createTimingServices : TimingServices = {
+    new TimingServices(useNanoTiming,recordFirstMessageTiming)
   }
 
 }

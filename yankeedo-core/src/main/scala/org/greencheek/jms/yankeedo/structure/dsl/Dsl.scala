@@ -76,9 +76,6 @@ object Dsl {
     def run_for(time : Duration) :  ScenarioWithUrlAndName = new NamedScenarioWithUrl {
       def scenario: Dsl.ScenarioWithoutAction = namedScenario.scenario.runForDuration(time)
     }
-    def recordStatsImmediately(statsRecordImmediately: Boolean) : ScenarioWithUrlAndName = new NamedScenarioWithUrl {
-      override def scenario: ScenarioWithoutAction = namedScenario.scenario.recordStatsImmediately(statsRecordImmediately)
-    }
   }
 
   class JmsActionCreator(scenario: ScenarioWithUrlAndName) {
