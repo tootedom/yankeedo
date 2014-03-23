@@ -571,6 +571,10 @@
             <resource>
                 <directory>src/main/resources</directory>
                 <filtering>true</filtering>
+                <includes>
+                    <include>*.xml</include>
+                    <include>*.conf</include>
+                </includes>
             </resource>
         </resources>
     </build>

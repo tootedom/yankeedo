@@ -29,13 +29,13 @@
 		</encoder>
 	</appender>
 
-    <logger name="org.greencheek.jms.yankeedo.scenarioexecution.producer.ProducerExecutor" level="DEBUG" aditivity="false"/>
-    <logger name="org.greencheek.jms.yankeedo.scenarioexecution.consumer" level="DEBUG" aditivity="false"/>
-	<logger name="org.greencheek.jms.yankeedo.scenarioexecution" level="DEBUG" aditivity="false"/>
+    <logger name="org.greencheek.jms.yankeedo.scenarioexecution.producer.ProducerExecutor" level="${yankeedo.log.level:-ERROR}" aditivity="false"/>
+    <logger name="org.greencheek.jms.yankeedo.scenarioexecution.consumer" level="${yankeedo.log.level:-ERROR}" aditivity="false"/>
+	<logger name="org.greencheek.jms.yankeedo.scenarioexecution" level="${yankeedo.log.level:-ERROR}" aditivity="false"/>
 
 
 
-	<root level="DEBUG" aditivity="false">
+	<root level="${yankeedo.log.level:-ERROR}" aditivity="false">
 		<appender-ref ref="CONSOLE" />
 	</root>
 

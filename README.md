@@ -443,6 +443,77 @@ to handle the incoming consumer
 
 ### Statistics ###
 
+Statistics on the consumption/production of messsage are recorded for each individual scenario.
+The statistics are recorded using the LatencyUtils library (https://github.com/LatencyUtils/LatencyUtils)
+and can be output by specifying on the Scenario Container that you wish to output statistics.  An example is
+provided in the distribution showing the statistics output, is like the following:
+
+    import org.greencheek.jms.yankeedo.scenarioexecution.consumer.messageprocessor.SystemOutToStringCamelMessageProcessor
+    import org.greencheek.jms.yankeedo.structure.dsl.Dsl._
+    import org.greencheek.jms.yankeedo.structure.scenario.ScenarioContainer
+    import scala.concurrent.duration._
+
+    class ProduceAndConsumeToQueueWithStatsExample extends ScenarioContainer {
+      withScenarios(
+        List(
+          createScenario(
+            "Consumer messages scenario" connect_to "tcp://localhost:61616?daemon=true&jms.closeTimeout=200"
+              until_no_of_messages_sent 100
+              consume from queue "YankeedooProductAndConsumeToQueueExample"
+              prefetch 1
+              with_message_consumer SystemOutToStringCamelMessageProcessor
+          ),
+          createScenario(
+            "Product 100 messages scenario" connect_to "tcp://localhost:61616?daemon=true&jms.closeTimeout=200"
+              until_no_of_messages_sent 100
+              produce to queue "YankeedooProductAndConsumeToQueueExample"
+              with_per_message_delay_of Duration(100,MILLISECONDS)
+              with_persistent_delivery
+          )
+        )
+      )
+      outputStats()
+      useNanoTiming(true)
+    }
+
+
+If you are executing a set of scenarios in a unit test or similar to that, with the ScenarioContainer, you specify the
+same method on the ScenarioContainer:
+
+      val scenarioContainer = ScenarioContainer(producerScenario1).runFor(Duration(10,SECONDS)).outputStats().useNanoTiming(false)
+
+For Example:
+
+          val consumerScenario1 = createScenario(
+            "consume messages as fast as possible" connect_to "tcp://localhost:" +  port + "?daemon=true&jms.closeTimeout=200"
+              until_no_of_messages_consumed -1
+              consume from queue "fastqueue"
+              prefetch 100
+          )
+
+          val producerScenario1 = createScenario(
+            "produce messages,as fast as possible, for at least 10 seconds" connect_to "tcp://localhost:" +  port + "?daemon=true&jms.closeTimeout=200"
+              until_no_of_messages_sent -1
+              produce to queue "fastqueue"
+              with_persistent_delivery
+          )
+
+          val scenarioContainer = ScenarioContainer(consumerScenario1,producerScenario1)
+          scenarioContainer.runFor(Duration(5,SECONDS)).outputStats().recordFirstMessageTiming(false)
+
+          ScenarioContainerExecutor.executeScenarios(scenarioContainer,Duration(5,SECONDS)) should beEqualTo(0)
+
+By default System.nanoTime() is used to record the latencies.  If your platform has a non monotonic timer (ie tsc that isn't
+synchronized) and you know it to cuase issue (i.e. Syste.nanoTime can go back in time when a thread swaps Core/CPU.  Then you can set
+`useNanoTiming(false)` to fall back to System.currentTimeInMillis, which even though non monotonic due to time changes (ntp),
+it maybe be better that nano timing
+
+The statistics output looks as follows.  There will be a set of statistics for each defined scenario describing:
+
+- The number of messages for which statistics have been recorded
+- The minimum duration
+- The max duration
+- mean, stddev, 80, 90, 99, and 99.9th percentile:
 
 
     ================================================================================
@@ -485,18 +556,35 @@ The distribution can be found in either *.tar.gz* or *.zip*:
 
 The distribution folder structure looks as follows:
 
-    |-bin
-    |-conf
-    |-data-files
-    |-lib
-    |-results
-    |-scenario-lib
-    |-user-files
-    |---scenarios
-    |-----advanced
-    |-----basic
-    
 
-
-    
-    
+       |-- bin
+       |   |-- yankeedo.sh
+       |-- conf
+       |   |-- application.conf
+       |   |-- logback.xml
+       |-- data-files
+       |   |-- ProduceAndConsumeToQueueFromFileExample
+       |   |-- sample-files
+       |   |   |-- file1.json
+       |   |   |-- file1.xml
+       |   |   |-- file2.json
+       |-- lib
+       |   |-- activemq-broker-5.9.0.jar
+       |   |-- activemq-camel-5.9.0.jar
+       |   |-- ....
+       |   |-- ....
+       |-- LICENSE
+       |-- results
+       |-- scenario-lib
+       |-- target
+       |   |-- classes
+       |   |   ....
+       |   |-- zincCache
+       |-- user-files
+       |   |-- scenarios
+       |   |   |-- examples
+       |   |   |   |-- ProduceAndConsumerToQueueWithStatsExample.scala
+       |   |   |   |-- ProduceAndConsumeToQueueExample.scala
+       |   |   |   |-- ProduceAndConsumeToQueueFromFileExample.scala
+       |   |   |   |-- ProduceAndConsumeToTopicExample.scala
+       |   |   |   |-- ProductAndConsumeToQueueFromADirectory.scala

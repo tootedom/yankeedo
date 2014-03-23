@@ -12,20 +12,13 @@
         </encoder>
     </appender>
 
-    <appender name="APP" class="ch.qos.logback.core.ConsoleAppender">
-        <encoder>
-            <pattern>[%date{ISO8601}]: %msg%n%rEx</pattern>
-            <immediateFlush>false</immediateFlush>
-        </encoder>
-    </appender>
+    <logger name="org.greencheek.jms.yankeedo.scenarioexecution.producer.ProducerExecutor" level="${yankeedo.log.level:-ERROR}" aditivity="false"/>
+    <logger name="org.greencheek.jms.yankeedo.scenarioexecution.consumer" level="${yankeedo.log.level:-ERROR}" aditivity="false"/>
+    <logger name="org.greencheek.jms.yankeedo.scenarioexecution" level="${yankeedo.log.level:-ERROR}" aditivity="false"/>
 
-    <logger name="org.greencheek.jms.yankeedo.scenarioexecution.producer.ProducerExecutor" level="INFO" aditivity="false"/>
-    <logger name="org.greencheek.jms.yankeedo.scenarioexecution.consumer" level="INFO" aditivity="false"/>
-    <logger name="org.greencheek.jms.yankeedo.scenarioexecution" level="INFO" aditivity="false"/>
 
-    <logger name="org.greencheek.jms.yankeedo.app" level="INFO" aditivity="false"/>
 
-    <root level="WARN" aditivity="false">
+    <root level="${yankeedo.log.level:-ERROR}" aditivity="false">
         <appender-ref ref="CONSOLE" />
     </root>
 

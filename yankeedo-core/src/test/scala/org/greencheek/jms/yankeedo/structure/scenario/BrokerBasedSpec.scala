@@ -51,13 +51,11 @@ trait BrokerBasedSpec extends Specification {
       println("==========")
       broker = new BrokerService()
       broker.setBrokerName("localbroker")
-      broker.setPersistent(false)
       broker.setUseJmx(false)
 
       broker.setPersistenceAdapter(new MemoryPersistenceAdapter())
       broker.addConnector("tcp://localhost:" + port);
-
-      broker.setTmpDataDirectory(null)
+      broker.setPersistent(false)
       broker.setStartAsync(false)
       broker.setUseShutdownHook(false)
       broker.setUseVirtualTopics(false)

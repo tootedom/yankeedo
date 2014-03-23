@@ -87,14 +87,10 @@ class TestScenarioContainerExecutorSpec extends BrokerBasedSpec {
       val scenarioContainer = ScenarioContainer(consumerScenario1,producerScenario1)
       scenarioContainer.runFor(Duration(10,SECONDS))
 
-
-      ScenarioContainerExecutor.executeScenarios(scenarioContainer,Duration(5,SECONDS)) should beEqualTo(0)
-
+      ScenarioContainerExecutor.executeScenarios(scenarioContainer,Duration(7,SECONDS)) should beEqualTo(0)
 
       messageProcessor.numberOfPersistentMessages should greaterThanOrEqualTo(4)
       messageProcessor.numberOfPersistentMessages should lessThan(10)
-
-      val nanos : TimeUnit = TimeUnit.NANOSECONDS
 
 
     }

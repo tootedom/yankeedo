@@ -166,7 +166,7 @@ class TestProducterMultiScenarioSpec extends BrokerBasedSpec {
 
 
       val scenarioExecutor : ActorRef = actorSystem.actorOf(Props(new ScenariosExecutionManager(appLatch,
-                                                                      ScenarioContainer(consumerScenario1,producerScenario2).runFor(Duration(10,SECONDS)).outputStats)))
+                                                                      ScenarioContainer(consumerScenario1,producerScenario2).runFor(Duration(10,SECONDS)).outputStats().useNanoTiming(false))))
       scenarioExecutor ! StartExecutingScenarios
 
       implicit val timeout = Timeout(2,SECONDS)

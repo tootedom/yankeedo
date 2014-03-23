@@ -100,6 +100,7 @@ class ScenarioExecutionMonitor(val scenario : Scenario,
 
   private def doStop() : Unit = {
     stopChildren()
+    jmsStop()
     actorFinished()
     notifyParentScenarioHasFinished()
   }
@@ -122,12 +123,14 @@ class ScenarioExecutionMonitor(val scenario : Scenario,
     for (child : ActorRef <- childrenActorRefs) context.stop(child)
   }
 
+  private def jmsStop() {
+    debug("Shutting down ExecutionMonitor's application context" + jmsComponent)
+    jmsComponent.stop()
+  }
 
   private def actorFinished() {
     debug("ExecutionMonitor for scenario is shutting down:" + scenario)
 
-    debug("Shutting down ExecutionMonitor's application context" + jmsComponent)
-    jmsComponent.stop()
 
     debug("Stopping ExecutionMonitor actor")
     context.stop(self)

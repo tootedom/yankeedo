@@ -54,7 +54,7 @@
         <property name="targetConnectionFactory" ref="amqConnectionFactory"></property>
         <property name="cacheConsumers" value="true"></property>
         <property name="cacheProducers" value="true"></property>
-        <property name="reconnectOnException" value="true"></property>
+        <property name="reconnectOnException" value="false"></property>
         <property name="sessionCacheSize" value="${jms.sessioncachesize:10}"></property>
         <property name="clientId" value="${jms.clientId}"></property>
     </bean>
@@ -74,7 +74,9 @@
         <property name="acknowledgementMode" value="${jms.ackMode:2}"/>
         <property name="timeToLive" value="${jms.timeToLive:2000}" />
         <property name="cacheLevelName" value="CACHE_CONSUMER" />
+        <property name="acceptMessagesWhileStopping" value="false"/>
     </bean>
+
 
     <bean id="jms" class="org.apache.camel.component.jms.JmsComponent">
         <constructor-arg index="0" ref="jmsConfig"/>
