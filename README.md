@@ -479,8 +479,8 @@ to handle the incoming consumer
 
 The distribution can be found in either *.tar.gz* or *.zip*:
 
-- http://search.maven.org/remotecontent?filepath=org/greencheek/mq/yankeedo-distro/0.1.3/yankeedo-distro-0.1.3-bundle.tar.gz
-- http://search.maven.org/remotecontent?filepath=org/greencheek/mq/yankeedo-distro/0.1.3/yankeedo-distro-0.1.3-bundle.zip
+- http://search.maven.org/remotecontent?filepath=org/greencheek/mq/yankeedo-distro/0.1.4/yankeedo-distro-0.1.4-bundle.tar.gz
+- http://search.maven.org/remotecontent?filepath=org/greencheek/mq/yankeedo-distro/0.1.4/yankeedo-distro-0.1.4-bundle.zip
 
 
 The distribution folder structure looks as follows:
