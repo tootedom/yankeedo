@@ -8,7 +8,7 @@ import scala.reflect.io.File
 /**
  * Created by dominictootell on 16/03/2014.
  */
-class ProductAndConsumeToQueueFromADirectory extends ScenarioContainer {
+class ProduceAndConsumeToQueueFromADirectory extends ScenarioContainer {
   val testDirectoryPath =  this.getClass.getResource("/sample-files").getPath
 
   val directorySource = new DirectoryBasedMessageSource(path = testDirectoryPath,

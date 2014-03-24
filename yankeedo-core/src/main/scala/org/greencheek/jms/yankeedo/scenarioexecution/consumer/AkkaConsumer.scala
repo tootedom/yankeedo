@@ -27,6 +27,7 @@ import org.greencheek.jms.yankeedo.scenarioexecution.consumer.messageprocessor.C
 import org.LatencyUtils.LatencyStats
 import grizzled.slf4j.Logging
 import org.greencheek.jms.yankeedo.stats.TimingServices
+import javax.jms.JMSException
 
 /**
  * User: dominictootell
@@ -63,7 +64,6 @@ class AkkaConsumer(val jmsAction : JmsCons,
       // if we stop the actor (consumer), then camel
       // still has the message, and waits a while to stop.
       // so we just mark the consumer via the stopped.  And fail any incoming messages
-//      context.stop(self)
       if(!stopped.get()) {
         markStopped
         context.parent ! ConsumerFinished
@@ -84,7 +84,7 @@ class AkkaConsumer(val jmsAction : JmsCons,
         // if this is <0 the message then it will just not ack the message, and will send a failure
         if (stopped.get) {
           isStopped = true
-          sender ! Failure(new Throwable("Message Consumer Has Been Stopped.  Not Consuming message, waiting for shutdown"))
+          sender ! Failure(new JMSException("Message Consumer Has Been Stopped.  Not Consuming message, waiting for shutdown"))
         }
         else
         {
@@ -98,7 +98,7 @@ class AkkaConsumer(val jmsAction : JmsCons,
           if (sharedMessageNumber < 0) {
             isStopped = true
             markStopped
-            sender ! Failure(new Throwable("Message Consumer Finished.  Not Consuming message, waiting for shutdown"))
+            sender ! Failure(new JMSException("Message Consumer Finished.  Not Consuming message, waiting for shutdown"))
           }
           else
           {
@@ -118,20 +118,18 @@ class AkkaConsumer(val jmsAction : JmsCons,
                   consumeMessage = false
                 }
               }
-            }
+            } finally {
+              if (consumeMessage) {
+                sender ! Ack
+              }
+              else {
+                sender ! Failure(exception.get)
+              }
 
-
-
-            if (consumeMessage) {
-              sender ! Ack
-            }
-            else {
-              sender ! Failure(exception.get)
-            }
-
-            if (sharedMessageNumber <= 0) {
-              info("Max number of messages to processed has been reached")
-              stop
+              if (sharedMessageNumber == 0) {
+                info("Max number of messages to processed has been reached")
+                stop
+              }
             }
           }
         }

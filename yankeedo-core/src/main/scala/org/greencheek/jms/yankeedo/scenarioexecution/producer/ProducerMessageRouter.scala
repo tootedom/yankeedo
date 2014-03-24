@@ -21,7 +21,7 @@ import akka.actor.{Props, ActorRef, ActorContext}
 import java.util.concurrent.atomic.{AtomicBoolean, AtomicLong}
 import akka.routing.{RoundRobinRouter, RoundRobinGroup}
 import collection.JavaConversions
-import org.greencheek.jms.yankeedo.structure.actions.{JmsProducerAction => Producer}
+import org.greencheek.jms.yankeedo.structure.actions.{JmsProducerAction => Producer, Queue, Topic}
 
 /**
  * User: dominictootell

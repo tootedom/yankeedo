@@ -22,6 +22,8 @@ import javax.jms.{JMSException, ExceptionListener}
  */
 class DefaultExceptionListener extends ExceptionListener {
   override def onException(p1: JMSException): Unit = {
-    p1.printStackTrace()
+//    System.out.println("kkkkklkjlkjlkj")
+//    System.out.println(p1.getLinkedException)
+//    p1.printStackTrace()
   }
 }

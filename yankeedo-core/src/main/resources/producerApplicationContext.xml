@@ -73,7 +73,8 @@
         <property name="preserveMessageQos" value="true" />
         <property name="acknowledgementMode" value="${jms.ackMode:2}"/>
         <property name="timeToLive" value="${jms.timeToLive:2000}" />
-        <!--<property name="cacheLevelName" value="CACHE_PRODUCER" />-->
+        <property name="cacheLevelName" value="CACHE_PRODUCER" />
+        <property name="acceptMessagesWhileStopping" value="false"/>
     </bean>
 
     <bean id="jms" class="org.apache.camel.component.jms.JmsComponent" destroy-method="doShutdown">

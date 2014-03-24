@@ -25,6 +25,7 @@ import scala.concurrent.duration._
 import grizzled.slf4j.Logging
 import org.apache.camel.impl.{DefaultCamelContext, DefaultShutdownStrategy}
 import java.util.concurrent.TimeUnit
+import org.apache.camel.Endpoint
 
 /**
  * User: dominictootell
@@ -99,10 +100,12 @@ class ScenarioExecutionMonitor(val scenario : Scenario,
   }
 
   private def doStop() : Unit = {
+    camelContext.shutdown()
     stopChildren()
+    notifyParentScenarioHasFinished()
     jmsStop()
     actorFinished()
-    notifyParentScenarioHasFinished()
+    shutdownStrategy.shutdown()
   }
 
   override def postStop() {
@@ -130,9 +133,6 @@ class ScenarioExecutionMonitor(val scenario : Scenario,
 
   private def actorFinished() {
     debug("ExecutionMonitor for scenario is shutting down:" + scenario)
-
-
-    debug("Stopping ExecutionMonitor actor")
     context.stop(self)
   }
 

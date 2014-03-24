@@ -78,6 +78,7 @@
     </bean>
 
 
+
     <bean id="jms" class="org.apache.camel.component.jms.JmsComponent">
         <constructor-arg index="0" ref="jmsConfig"/>
     </bean>
