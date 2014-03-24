@@ -1,4 +1,42 @@
-## Creating a Scenario and its Container ##
+
+- [Yankeedo]
+	- [Creating a Scenario and its Container](#creating-a-scenario-and-its-container)
+	- [Shout outs/Thanks to](#shout-outs/thanks-to)
+    - [Usage](#usage)
+        - [Distribution Quick Example](#distribution-quick-example)
+        - [Maven Quick Example](#maven-quick-example)
+    - [DSL](#dsl)
+        - [Producers](#producers)
+            - [Produce to a Queue 100 Messages](#produce-to-a-queue-100-messages)
+            - [Produce to a Queue for a duration](#produce-to-a-queue-for-a-duration)
+            - [Produce to a Queue, Sending messages with a delay](#produce-to-a-queue,-sending-messages-with-a-delay)
+            - [Produce to a Queue, but Specify the message need not be persisted](#produce-to-a-queue,but-specify-the-message-need-not-be-persisted)
+            - [Produce to a queue, but make the send asynchronous (no broker ack)](#Produce to a queue, but make the send asynchronous (no broker ack))
+            - [Configuring the message sent](#configuring-the-message-sent)
+        - [Consumers](#consumers)
+            - [Consume a specific number of messages](#consume-a-specific-number-of-messages)
+            - [Create many consumers on a queue](#create-many-consumers-on-a-queue)
+            - [A Custom Message Processor](#a-custom-message-processor)
+    - [Statistics](#statistics)
+
+# Yankeedo #
+
+Yankeedo is a simple way to store a set of scripts that produce to or consumer from an activemq broker.
+This allows you to build a set of AMQ message producers and consumer, that can send various messages to
+a broker; or consume from various queue.
+
+You can use Yankeedo during testing, i.e. integration or load testing, so see how your application adapts to various
+ messaging rates or/and formats.
+
+Yankeedo comes in two forms:
+
+- It can be used via the distribution.  Where you supply your scala scripts in a directory, and chose the scenario to
+execute.
+- It can be used within a Unit Test, via a maven dependency.
+
+
+
+# Creating a Scenario and its Container #
 
 A Scenario is effectively the piece of work you want to perform, it could be any of the following:
 
@@ -162,7 +200,7 @@ The following sends to a queue for 3 seconds, as many messages as possible
         produce to queue "delayedqueue"
     )
         
-### Produce to a Queue, Sending message with a delay ###
+### Produce to a Queue, Sending messages with a delay ###
     
 The following sends to a queue for 3 seconds, as many messages as possible; but each message is sent 
 with a duration of 1 second between each message send    
@@ -176,7 +214,7 @@ with a duration of 1 second between each message send
         with_per_message_delay_of Duration(1,SECONDS)
     )
     
-### Produce to a Queue, but Specify the message need not be persisted ###    
+### Produce to a Queue, but Specify the message need not be persisted ###
     
 The following sends to a queue with no persistence
 
@@ -190,7 +228,7 @@ The following sends to a queue with no persistence
         with_per_message_delay_of Duration(1,SECONDS)
     )
     
-### Produce to a queue, but make the send asynchronous (i.e don't wait for broker ack ###    
+### Produce to a queue, but make the send asynchronous (no broker ack) ###
 
 The following sends to a queue with persistent messages, but sends the message asynchronously
 
@@ -441,7 +479,7 @@ to handle the incoming consumer
 
 ----
 
-### Statistics ###
+# Statistics #
 
 Statistics on the consumption/production of messsage are recorded for each individual scenario.
 The statistics are recorded using the LatencyUtils library (https://github.com/LatencyUtils/LatencyUtils)
@@ -547,12 +585,14 @@ The statistics output looks as follows.  There will be a set of statistics for e
     ================================================================================
 ````
 
-### Distribution ###
+----
+
+# Distribution #
 
 The distribution can be found in either *.tar.gz* or *.zip*:
 
-- http://search.maven.org/remotecontent?filepath=org/greencheek/mq/yankeedo-distro/0.1.4/yankeedo-distro-0.1.4-bundle.tar.gz
-- http://search.maven.org/remotecontent?filepath=org/greencheek/mq/yankeedo-distro/0.1.4/yankeedo-distro-0.1.4-bundle.zip
+- http://search.maven.org/remotecontent?filepath=org/greencheek/mq/yankeedo-distro/0.1.5/yankeedo-distro-0.1.5-bundle.tar.gz
+- http://search.maven.org/remotecontent?filepath=org/greencheek/mq/yankeedo-distro/0.1.5/yankeedo-distro-0.1.5-bundle.zip
 
 
 The distribution folder structure looks as follows:
@@ -589,3 +629,29 @@ The distribution folder structure looks as follows:
        |   |   |   |-- ProduceAndConsumeToQueueFromFileExample.scala
        |   |   |   |-- ProduceAndConsumeToTopicExample.scala
        |   |   |   |-- ProductAndConsumeToQueueFromADirectory.scala
+
+
+To run yankeedo, Change directories to the installation folder, and execute the `/bin/yankeedo.sh`. You will see something
+similar to the following:
+
+    YANKEEDO_HOME is set to /Users/dominictootell/tmp/yankeedo-distro-0.1.5-SNAPSHOT
+    Choose a scenario number to run:
+         [0] ProduceAndConsumeToQueueWithStatsExample
+         [1] ProductAndConsumeToQueueFromADirectory
+         [2] org.greencheek.jms.yankeedo.app.ProduceAndConsumeToQueueExample
+         [3] org.greencheek.jms.yankeedo.app.ProduceAndConsumeToQueueFromFileExample
+         [4] org.greencheek.jms.yankeedo.app.ProduceAndConsumeToTopicExample
+
+
+To run one of the examples you press the associated number, i.e. 0 and press return.
+To write your own Scala Scenarios, just place them in the `user-files/scenarios` directory.  If you have and data files
+that your scenario reads from the class path, place them in `<YANKEEDO_HOME>/data-files`.  If your script uses a library,
+place it in `<YANKEEDO_HOME>/lib`.
+
+The distribution comes with a selection of example:
+
+- ProduceAndConsumeToQueueWithStatsExample : Example of output statistics when the scenario completes
+- ProductAndConsumeToQueueFromADirectory : Example of sending messages that are read from a directory in `data-files`
+- ProduceAndConsumeToQueueExample : Example of sending and consuming from a queue
+- ProduceAndConsumeToQueueFromFileExample : Example that sends the content of a file from the `data-files` directory
+- ProduceAndConsumeToTopicExample : Example sending and consuming from a topic
