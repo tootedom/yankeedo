@@ -74,15 +74,15 @@ You can use the library in two ways:
 
 The distribution can be found in either *.tar.gz* or *.zip*:
 
-- http://search.maven.org/remotecontent?filepath=org/greencheek/mq/yankeedo-distro/0.1.4/yankeedo-distro-0.1.4-bundle.tar.gz
-- http://search.maven.org/remotecontent?filepath=org/greencheek/mq/yankeedo-distro/0.1.4/yankeedo-distro-0.1.4-bundle.zip
+- http://search.maven.org/remotecontent?filepath=org/greencheek/mq/yankeedo-distro/0.1.5/yankeedo-distro-0.1.5-bundle.tar.gz
+- http://search.maven.org/remotecontent?filepath=org/greencheek/mq/yankeedo-distro/0.1.5/yankeedo-distro-0.1.5-bundle.zip
 
 The maven dependency is on maven central and can be included with the following:
 
     <dependency>
         <groupId>org.greencheek.mq</groupId>
         <artifactId>yankeedo-core</artifactId>
-        <version>0.1.4</version>
+        <version>0.1.5</version>
         <scope>test</scope>
     </dependency>
     
@@ -91,7 +91,7 @@ If you want to use the extra message sources (discussed later), can be included 
     <dependency>
         <groupId>org.greencheek.mq</groupId>
         <artifactId>yankeedo-messagesources</artifactId>
-        <version>0.1.4</version>
+        <version>0.1.5</version>
         <scope>test</scope>
     </dependency>
     
