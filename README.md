@@ -18,6 +18,7 @@
             - [Create many consumers on a queue](#create-many-consumers-on-a-queue)
             - [A Custom Message Processor](#a-custom-message-processor)
     - [Statistics](#statistics)
+    - [Distribution](#distribution)
 
 # Yankeedo #
 
