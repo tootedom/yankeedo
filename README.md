@@ -9,9 +9,9 @@
         - [Producers](#producers)
             - [Produce to a Queue 100 Messages](#produce-to-a-queue-100-messages)
             - [Produce to a Queue for a duration](#produce-to-a-queue-for-a-duration)
-            - [Produce to a Queue, Sending messages with a delay](#produce-to-a-queue,-sending-messages-with-a-delay)
-            - [Produce to a Queue, but Specify the message need not be persisted](#produce-to-a-queue,but-specify-the-message-need-not-be-persisted)
-            - [Produce to a queue, but make the send asynchronous (no broker ack)](#Produce to a queue, but make the send asynchronous (no broker ack))
+            - [Produce to a Queue, Sending messages with a delay](#produce-to-a-queue-sending-messages-with-a-delay)
+            - [Produce to a Queue, but Specify the message need not be persisted](#produce-to-a-queue-but-specify-the-message-need-not-be-persisted)
+            - [Produce to a queue, but make the send asynchronous (no broker ack)](#produce-to-a-queue-but-make-the-send-asynchronous-no-broker-ack))
             - [Configuring the message sent](#configuring-the-message-sent)
         - [Consumers](#consumers)
             - [Consume a specific number of messages](#consume-a-specific-number-of-messages)
@@ -19,6 +19,8 @@
             - [A Custom Message Processor](#a-custom-message-processor)
     - [Statistics](#statistics)
     - [Distribution](#distribution)
+
+----
 
 # Yankeedo #
 
@@ -75,15 +77,15 @@ You can use the library in two ways:
 
 The distribution can be found in either *.tar.gz* or *.zip*:
 
-- http://search.maven.org/remotecontent?filepath=org/greencheek/mq/yankeedo-distro/0.1.5/yankeedo-distro-0.1.5-bundle.tar.gz
-- http://search.maven.org/remotecontent?filepath=org/greencheek/mq/yankeedo-distro/0.1.5/yankeedo-distro-0.1.5-bundle.zip
+- http://search.maven.org/remotecontent?filepath=org/greencheek/mq/yankeedo-distro/0.1.6/yankeedo-distro-0.1.6-bundle.tar.gz
+- http://search.maven.org/remotecontent?filepath=org/greencheek/mq/yankeedo-distro/0.1.6/yankeedo-distro-0.1.6-bundle.zip
 
 The maven dependency is on maven central and can be included with the following:
 
     <dependency>
         <groupId>org.greencheek.mq</groupId>
         <artifactId>yankeedo-core</artifactId>
-        <version>0.1.5</version>
+        <version>0.1.6</version>
         <scope>test</scope>
     </dependency>
     
@@ -92,7 +94,7 @@ If you want to use the extra message sources (discussed later), can be included 
     <dependency>
         <groupId>org.greencheek.mq</groupId>
         <artifactId>yankeedo-messagesources</artifactId>
-        <version>0.1.5</version>
+        <version>0.1.6</version>
         <scope>test</scope>
     </dependency>
     
@@ -592,8 +594,8 @@ The statistics output looks as follows.  There will be a set of statistics for e
 
 The distribution can be found in either *.tar.gz* or *.zip*:
 
-- http://search.maven.org/remotecontent?filepath=org/greencheek/mq/yankeedo-distro/0.1.5/yankeedo-distro-0.1.5-bundle.tar.gz
-- http://search.maven.org/remotecontent?filepath=org/greencheek/mq/yankeedo-distro/0.1.5/yankeedo-distro-0.1.5-bundle.zip
+- http://search.maven.org/remotecontent?filepath=org/greencheek/mq/yankeedo-distro/0.1.6/yankeedo-distro-0.1.6-bundle.tar.gz
+- http://search.maven.org/remotecontent?filepath=org/greencheek/mq/yankeedo-distro/0.1.6/yankeedo-distro-0.1.6-bundle.zip
 
 
 The distribution folder structure looks as follows:
@@ -635,10 +637,10 @@ The distribution folder structure looks as follows:
 To run yankeedo, Change directories to the installation folder, and execute the `/bin/yankeedo.sh`. You will see something
 similar to the following:
 
-    YANKEEDO_HOME is set to /Users/dominictootell/tmp/yankeedo-distro-0.1.5-SNAPSHOT
+    YANKEEDO_HOME is set to /Users/dominictootell/tmp/yankeedo-distro-0.1.6
     Choose a scenario number to run:
          [0] ProduceAndConsumeToQueueWithStatsExample
-         [1] ProductAndConsumeToQueueFromADirectory
+         [1] ProduceAndConsumeToQueueFromADirectory
          [2] org.greencheek.jms.yankeedo.app.ProduceAndConsumeToQueueExample
          [3] org.greencheek.jms.yankeedo.app.ProduceAndConsumeToQueueFromFileExample
          [4] org.greencheek.jms.yankeedo.app.ProduceAndConsumeToTopicExample
@@ -652,7 +654,7 @@ place it in `<YANKEEDO_HOME>/lib`.
 The distribution comes with a selection of example:
 
 - ProduceAndConsumeToQueueWithStatsExample : Example of output statistics when the scenario completes
-- ProductAndConsumeToQueueFromADirectory : Example of sending messages that are read from a directory in `data-files`
+- ProduceAndConsumeToQueueFromADirectory : Example of sending messages that are read from a directory in `data-files`
 - ProduceAndConsumeToQueueExample : Example of sending and consuming from a queue
 - ProduceAndConsumeToQueueFromFileExample : Example that sends the content of a file from the `data-files` directory
 - ProduceAndConsumeToTopicExample : Example sending and consuming from a topic
