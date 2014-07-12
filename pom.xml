@@ -3,7 +3,7 @@
     <groupId>org.greencheek.mq</groupId>
     <artifactId>yankeedo-parent</artifactId>
     <packaging>pom</packaging>
-    <version>0.1.8-SNAPSHOT</version>
+    <version>0.1.8</version>
     <inceptionYear>2013</inceptionYear>
     <name>Yankeedoo Parent Pom</name>
     <description>Command Line JMS for producer or consumer for sending and consuming from ActiveMQ</description>
@@ -33,7 +33,7 @@
         <connection>scm:git:git@github.com:tootedom/yankeedo.git</connection>
         <url>scm:git:git@github.com:tootedom/yankeedo.git</url>
         <developerConnection>scm:git:git@github.com:tootedom/yankeedo.git</developerConnection>
-        <tag>HEAD</tag>
+        <tag>yankeedo-parent-0.1.8</tag>
     </scm>
     <modules>
 	    <module>yankeedo-core</module>
