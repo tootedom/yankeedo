@@ -15,14 +15,26 @@
  */
 package org.greencheek.jms.yankeedo.scenarioexecution.producer
 
+import akka.camel.CamelMessage
+import org.greencheek.jms.yankeedo.scenarioexecution.producer.message.CamelMessageSource
 import org.greencheek.jms.yankeedo.scenarioexecution.{ProducerFinished, ScenarioExecutionMonitor}
 import org.greencheek.jms.yankeedo.structure.scenario.Scenario
-import akka.actor.{Props, ActorRef, ActorContext}
+import akka.actor.{ActorRef, ActorContext}
 import java.util.concurrent.atomic.{AtomicBoolean, AtomicLong}
-import akka.routing.{RoundRobinRouter, RoundRobinGroup}
+import akka.routing.RoundRobinGroup
 import collection.JavaConversions
-import org.greencheek.jms.yankeedo.structure.actions.{JmsProducerAction => Producer, Queue, Topic}
+import java.util.{ Map ⇒ JMap, HashMap => JHashMap }
+import org.greencheek.jms.yankeedo.structure.actions.{JmsProducerAction => Producer}
 
+import scala.concurrent.duration.Duration
+
+
+object ProducerMessageRouter {
+  val PERSISTENT = 2
+  val NON_PERSISTENT = 1
+  val JMS_HEADER_DELIVERY_MODE = "JMSDeliveryMode"
+  val JMS_HEADER_TTL = "JMSExpiration"
+}
 /**
  * User: dominictootell
  * Date: 12/01/2013
@@ -31,10 +43,12 @@ import org.greencheek.jms.yankeedo.structure.actions.{JmsProducerAction => Produ
 class ProducerMessageRouter(scenario : Scenario,
                             children : (ActorContext, AtomicLong) => List[ActorRef]) extends ScenarioExecutionMonitor(scenario,children) {
 
-
+  import ProducerMessageRouter._
   val messagesToSend = new AtomicLong(scenario.numberOfMessages)
   val infinite : Boolean = if(messagesToSend.get() == -1) true else false
   val stopped = new AtomicBoolean(false)
+  val producer : Producer =  scenario.jmsAction.asInstanceOf[Producer]
+  val messageSource : CamelMessageSource = producer.messageSource
 
 
   val router = context.actorOf(new RoundRobinGroup(JavaConversions.asJavaIterable(for (actorRef <- childrenActorRefs) yield actorRef.path.toString)).props(),"ProducerMessageRouter")
@@ -53,13 +67,39 @@ class ProducerMessageRouter(scenario : Scenario,
             markAsStopped
           }
           else {
-            router ! scenario.jmsAction.asInstanceOf[Producer].messageSource.getMessage
+            router ! configureQOSHeaders(messageSource.getMessage)
           }
         } else {
-          router ! scenario.jmsAction.asInstanceOf[Producer].messageSource.getMessage
+          router ! configureQOSHeaders(messageSource.getMessage)
         }
 
       }
+    }
+  }
+
+
+
+  private def configureQOSHeaders(message : CamelMessage) : CamelMessage = {
+
+    val headers : JMap[String,Any] = new JHashMap(message.getHeaders.size)
+    headers.putAll(message.getHeaders)
+
+    if(producer.persistentDelivery) {
+      setHeader(JMS_HEADER_DELIVERY_MODE,PERSISTENT,headers)
+    } else {
+      setHeader(JMS_HEADER_DELIVERY_MODE,NON_PERSISTENT,headers)
+    }
+
+    if(producer.timeToLive.gt(Duration.Zero)) {
+     setHeader(JMS_HEADER_TTL,System.currentTimeMillis() + producer.timeToLive.toMillis,headers)
+    }
+
+    message.withHeaders(headers)
+  }
+
+  private def setHeader(headerName : String, value : Any,map : JMap[String,Any]) = {
+    if(!map.containsKey(headerName)) {
+      map.put(headerName, value)
     }
   }
 

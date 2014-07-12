@@ -15,6 +15,8 @@
  */
 package org.greencheek.jms.yankeedo.scenarioexecution.consumer
 
+import java.util.concurrent.locks.LockSupport
+
 import akka.camel.{CamelMessage, Consumer}
 import akka.actor.Status.Failure
 import akka.camel.Ack
@@ -119,6 +121,10 @@ class AkkaConsumer(val jmsAction : JmsCons,
                 }
               }
             } finally {
+              if(jmsAction.messageDelay.gt(Duration.Zero)) {
+                LockSupport.parkNanos(jmsAction.messageDelay.toNanos)
+              }
+
               if (consumeMessage) {
                 sender ! Ack
               }

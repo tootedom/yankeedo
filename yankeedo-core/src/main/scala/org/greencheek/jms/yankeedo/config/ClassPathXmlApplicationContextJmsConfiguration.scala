@@ -20,6 +20,7 @@ import org.springframework.context.support.{PropertySourcesPlaceholderConfigurer
 import java.util.Properties
 import org.greencheek.jms.yankeedo.structure.scenario.Scenario
 import org.greencheek.jms.yankeedo.structure.actions.{DurableTopic, JmsConsumerAction, JmsProducerAction}
+import scala.collection.JavaConversions._
 
 /**
  * User: dominictootell
@@ -56,8 +57,19 @@ class ClassPathXmlApplicationContextJmsConfiguration(val scenario : Scenario) ex
     context.addBeanFactoryPostProcessor(configurer);
   }
 
-  private def getProperties(scenario : Scenario) : Properties = {
+  private def copySystemProperties() : Properties = {
     val props = new Properties();
+    val systemProperties = System.getProperties
+    for(entry <- systemProperties.entrySet) {
+      props.setProperty(entry.getKey.asInstanceOf[String], entry.getValue.asInstanceOf[String])
+    }
+
+
+    props
+  }
+
+  private def getProperties(scenario : Scenario) : Properties = {
+    val props = copySystemProperties;
     props.setProperty("jms.broker.url", scenario.jmsUrl);
     scenario.jmsAction match {
       case x:JmsConsumerAction => {
@@ -74,6 +86,7 @@ class ClassPathXmlApplicationContextJmsConfiguration(val scenario : Scenario) ex
         props.setProperty("jms.prefetch",x.prefetch.toString)
       }
       case x:JmsProducerAction => {
+        props.setProperty("jms.useAsyncSend",x.asyncSend.toString)
         props.setProperty("jms.persistent.delivery",x.persistentDelivery.toString)
       }
     }

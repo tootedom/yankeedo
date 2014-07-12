@@ -72,7 +72,6 @@
         <property name="maxConcurrentConsumers" value="${jms.max.concurrentConsumer:1}" />
         <property name="preserveMessageQos" value="true" />
         <property name="acknowledgementMode" value="${jms.ackMode:2}"/>
-        <property name="timeToLive" value="${jms.timeToLive:2000}" />
         <property name="cacheLevelName" value="CACHE_CONSUMER" />
         <property name="acceptMessagesWhileStopping" value="false"/>
     </bean>

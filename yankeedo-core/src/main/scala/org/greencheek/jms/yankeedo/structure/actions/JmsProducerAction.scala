@@ -29,6 +29,7 @@ object JmsProducerAction {
   val DEFAULT_PERSISTENT_DELIVERY = true
   val DEFAULT_ASYNC_SEND = true
   val DEFAULT_DELAY_BETWEEN_MESSAGES = Duration.MinusInf
+  val DEFAULT_MESSAGE_TIME_TO_LIVE = Duration.MinusInf
   val DEFAULT_MESSAGE_SOURCE = new CamelMessageSource {
     def getMessage: CamelMessage = CamelMessage(UUID.randomUUID(),Map.empty)
   }
@@ -39,13 +40,16 @@ class JmsProducerAction(val destination : JmsDestination,
                         val messageSource : CamelMessageSource = JmsProducerAction.DEFAULT_MESSAGE_SOURCE,
                         val persistentDelivery : Boolean = JmsProducerAction.DEFAULT_PERSISTENT_DELIVERY,
                         val asyncSend : Boolean = JmsProducerAction.DEFAULT_ASYNC_SEND,
-                        val delayBetweenMessages : Duration = JmsProducerAction.DEFAULT_DELAY_BETWEEN_MESSAGES) extends JmsAction {
+                        val delayBetweenMessages : Duration = JmsProducerAction.DEFAULT_DELAY_BETWEEN_MESSAGES,
+                        val timeToLive : Duration = JmsProducerAction.DEFAULT_MESSAGE_TIME_TO_LIVE
+                        ) extends JmsAction {
 
 
-  def withMessageSource(messageSource : CamelMessageSource) = new JmsProducerAction(destination,messageSource,persistentDelivery,asyncSend,delayBetweenMessages)
-  def withPersistentDelivery(persistent : Boolean) = new JmsProducerAction(destination,messageSource,persistent,asyncSend,delayBetweenMessages)
-  def withAsyncSend(async : Boolean) = new JmsProducerAction(destination,messageSource,persistentDelivery,async,delayBetweenMessages)
-  def sendMessageWithDelayOf(delay : Duration) = new JmsProducerAction(destination,messageSource,persistentDelivery,asyncSend,delay)
+  def withMessageSource(messageSource : CamelMessageSource) = new JmsProducerAction(destination,messageSource,persistentDelivery,asyncSend,delayBetweenMessages,timeToLive)
+  def withPersistentDelivery(persistent : Boolean) = new JmsProducerAction(destination,messageSource,persistent,asyncSend,delayBetweenMessages,timeToLive)
+  def withAsyncSend(async : Boolean) = new JmsProducerAction(destination,messageSource,persistentDelivery,async,delayBetweenMessages,timeToLive)
+  def sendMessageWithDelayOf(delay : Duration) = new JmsProducerAction(destination,messageSource,persistentDelivery,asyncSend,delay,timeToLive)
+  def sendMessageWithTTL(timeToLive : Duration) = new JmsProducerAction(destination,messageSource,persistentDelivery,asyncSend,delayBetweenMessages,timeToLive)
 
 
   override def toString = {
@@ -55,7 +59,8 @@ class JmsProducerAction(val destination : JmsDestination,
     buf ++= "persistent-delivery=" ++= persistentDelivery.toString += ','
     buf ++= "async-sends=" ++= asyncSend.toString  += ','
     buf ++= "destination=" ++= destination.toString += ','
-    buf ++= "delayBetweenMessagesSends=" ++= delayBetweenMessages.toString
+    buf ++= "delayBetweenMessagesSends=" ++= delayBetweenMessages.toString += ','
+    buf ++= "timeToLive" ++= timeToLive.toString
     buf += ')'
 
     buf.toString()

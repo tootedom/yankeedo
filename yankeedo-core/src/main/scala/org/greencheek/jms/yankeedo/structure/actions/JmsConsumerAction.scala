@@ -17,6 +17,8 @@ package org.greencheek.jms.yankeedo.structure.actions
 
 import org.greencheek.jms.yankeedo.scenarioexecution.consumer.messageprocessor.{CamelMessageProcessor, SystemOutToStringCamelMessageProcessor}
 
+import scala.concurrent.duration.Duration
+
 
 /**
  * User: dominictootell
@@ -26,23 +28,28 @@ import org.greencheek.jms.yankeedo.scenarioexecution.consumer.messageprocessor.{
 object JmsConsumerAction {
   val DEFULAT_NUMBER_OF_CONSUMERS = 1
   val DEFAULT_PREFETCH = 1
+  val DEFAULT_PER_MESSAGE_PROCESSING_DELAY = Duration.Zero
   final def DEFAULT_MESSAGE_PROCESSOR = SystemOutToStringCamelMessageProcessor
+
 }
 
 class JmsConsumerAction(val destination: JmsDestination,
                         val numberOfConsumers: Int = JmsConsumerAction.DEFULAT_NUMBER_OF_CONSUMERS,
                         val prefetch: Int = JmsConsumerAction.DEFAULT_PREFETCH,
-                        val messageProcessor: CamelMessageProcessor = JmsConsumerAction.DEFAULT_MESSAGE_PROCESSOR) extends JmsAction {
+                        val messageProcessor: CamelMessageProcessor = JmsConsumerAction.DEFAULT_MESSAGE_PROCESSOR,
+                        val messageDelay : Duration = JmsConsumerAction.DEFAULT_PER_MESSAGE_PROCESSING_DELAY) extends JmsAction {
 
   def consumeWithMessageProcessor(processor: CamelMessageProcessor) =
-    new JmsConsumerAction(destination, numberOfConsumers, prefetch, processor)
+    new JmsConsumerAction(destination, numberOfConsumers, prefetch, processor,messageDelay)
 
 
   def withConcurrentConsumers(number: Int) = {
-    new JmsConsumerAction(destination, number, prefetch, messageProcessor)
+    new JmsConsumerAction(destination, number, prefetch, messageProcessor,messageDelay)
   }
 
-  def withPrefetch(number: Int) = new JmsConsumerAction(destination, numberOfConsumers, number, messageProcessor)
+  def withPrefetch(number: Int) = new JmsConsumerAction(destination, numberOfConsumers, number, messageProcessor,messageDelay)
+
+  def processWithPerMessageDelayOf(delay : Duration) =  new JmsConsumerAction(destination, numberOfConsumers, prefetch, messageProcessor,delay)
 
   override def toString = {
     val buf = new StringBuilder

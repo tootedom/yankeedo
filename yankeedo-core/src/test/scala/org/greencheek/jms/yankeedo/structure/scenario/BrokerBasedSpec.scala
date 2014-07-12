@@ -15,6 +15,7 @@
  */
 package org.greencheek.jms.yankeedo.structure.scenario
 
+import org.apache.activemq.broker.region.policy.{IndividualDeadLetterStrategy, DeadLetterStrategy, PolicyEntry, PolicyMap}
 import org.specs2.mutable.Specification
 import org.apache.activemq.broker.BrokerService
 import java.net.ServerSocket
@@ -62,9 +63,27 @@ trait BrokerBasedSpec extends Specification {
       broker.setAdvisorySupport(false)
       broker.setSchedulerSupport(false)
       broker.setDedicatedTaskRunner(false)
+
+      broker.setDestinationPolicy(getDestinationPolicy())
       broker.start()
       broker.waitUntilStarted()
     }
+  }
+
+  def getDestinationPolicy() : PolicyMap  = {
+    val policyMap : PolicyMap = new PolicyMap
+
+    val p : PolicyEntry = new PolicyEntry
+    p.setQueue(">")
+    val dls = new IndividualDeadLetterStrategy
+    dls.setQueuePrefix("DLQ.")
+    dls.setProcessExpired(true)
+    dls.setProcessNonPersistent(false)
+    p.setDeadLetterStrategy(dls)
+    p.setExpireMessagesPeriod(1000)
+
+    policyMap.setDefaultEntry(p)
+    policyMap
   }
 
   def stopBroker = {

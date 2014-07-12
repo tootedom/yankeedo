@@ -34,7 +34,7 @@
 
         <property name="redeliveryPolicy">
             <bean id="redeliveryPolicy" class="org.apache.activemq.RedeliveryPolicy">
-                <property name="initialRedeliveryDelay" value="${jms.redelivery.initialDeply:1000}" />
+                <property name="initialRedeliveryDelay" value="${jms.redelivery.initialDelay:1000}" />
                 <property name="backOffMultiplier" value="${jms.redelivery.backOffMultiplier:1}" />
                 <property name="useExponentialBackOff" value="${jms.redelivery.useExponentialBackOff:false}" />
                 <property name="maximumRedeliveries" value="${jms.redelivery.maximumRedeliveries:2}" />
@@ -69,10 +69,8 @@
         <property name="transacted" value="${jms.transacted:false}" />
         <property name="concurrentConsumers" value="${jms.concurrentConsumer:1}" />
         <property name="maxConcurrentConsumers" value="${jms.max.concurrentConsumer:1}" />
-        <property name="deliveryPersistent" value="${jms.persistent.delivery:true}"/>
         <property name="preserveMessageQos" value="true" />
         <property name="acknowledgementMode" value="${jms.ackMode:2}"/>
-        <property name="timeToLive" value="${jms.timeToLive:2000}" />
         <property name="cacheLevelName" value="CACHE_PRODUCER" />
         <property name="acceptMessagesWhileStopping" value="false"/>
     </bean>

@@ -193,6 +193,13 @@ object Dsl {
         consumerScenario.scenario
       )
     }
+
+    def with_per_message_delay_of(duration : Duration) = {
+      new ConsumerPopulatedScenario(
+        consumerScenario.action.processWithPerMessageDelayOf(duration),
+        consumerScenario.scenario
+      )
+    }
   }
 
   class ProducerPopulatedScenarioConfigurer(producerScenario: ProducerPopulatedScenario) {
@@ -252,6 +259,13 @@ object Dsl {
     def with_per_message_delay_of(delay: Duration) = {
       new ProducerPopulatedScenario(
         producerScenario.action.sendMessageWithDelayOf(delay),
+        producerScenario.scenario
+      )
+    }
+
+    def with_message_ttl_of(timeToLive : Duration) = {
+      new ProducerPopulatedScenario(
+        producerScenario.action.sendMessageWithTTL(timeToLive),
         producerScenario.scenario
       )
     }
