@@ -13,10 +13,12 @@
             - [Produce to a Queue, but Specify the message need not be persisted](#produce-to-a-queue-but-specify-the-message-need-not-be-persisted)
             - [Produce to a queue, but make the send asynchronous (no broker ack)](#produce-to-a-queue-but-make-the-send-asynchronous-no-broker-ack))
             - [Configuring the message sent](#configuring-the-message-sent)
+            - [Produce to a queue, setting a time to live on the message](#produce-to-a-queue-setting-a-time-to-live-on-the-message)
         - [Consumers](#consumers)
             - [Consume a specific number of messages](#consume-a-specific-number-of-messages)
             - [Create many consumers on a queue](#create-many-consumers-on-a-queue)
             - [A Custom Message Processor](#a-custom-message-processor)
+            - [Consume messages with a delay](#consume-messages-with-a-delay) 
     - [Statistics](#statistics)
     - [Distribution](#distribution)
 
@@ -28,7 +30,9 @@ Yankeedo is a simple way to store a set of scripts that produce to or consumer f
 This allows you to build a set of AMQ message producers and consumer, that can send various messages to
 a broker; or consume from various queue.
 
-You can use Yankeedo during testing, i.e. integration or load testing, so see how your application adapts to various
+It could help you set the setup of your ActiveMQ broker, and how it adapts for certain scenarios.
+
+You can use Yankeedo during testing, i.e. integration or load testing, so you can see how your application adapts to various
  messaging rates or/and formats.
 
 Yankeedo comes in two forms:
@@ -36,7 +40,6 @@ Yankeedo comes in two forms:
 - It can be used via the distribution.  Where you supply your scala scripts in a directory, and chose the scenario to
 execute.
 - It can be used within a Unit Test, via a maven dependency.
-
 
 
 # Creating a Scenario and its Container #
@@ -248,7 +251,24 @@ The following sends to a queue with persistent messages, but sends the message a
 
 Please see the following for more information about persistent messaging and asynchronous sends:
 - http://activemq.apache.org/how-do-i-enable-asynchronous-sending.html and 
-- http://activemq.apache.org/what-is-the-difference-between-persistent-and-non-persistent-delivery.html  
+- http://activemq.apache.org/what-is-the-difference-between-persistent-and-non-persistent-delivery.html
+  
+### Produce to a queue, setting a time to live on the message ###
+  
+The following sends messages to a queue.  Each message has a JMSExpiration set that means the message will
+expire in 5 seconds:
+
+    createScenario(
+        "produce messages for 3 seconds scenario, with delay" 
+        connect_to "tcp://localhost:61616?daemon=true&jms.closeTimeout=200"
+        run_for Duration(3,SECONDS)
+        until_no_of_messages_sent -1
+        produce to queue "delayedqueue"
+        with_persistent_delivery and
+        with_no_broker_ack and
+        with_per_message_delay_of Duration(1,SECONDS)
+        with_message_ttl_of(Duration(5,TimeUnit.SECONDS))
+    )
 
 ----
 
@@ -402,8 +422,8 @@ from the queue *consumerqueue*.  Only one message is prefetched by this consumer
         consume from queue "consumerqueue"
         prefetch 1
     )    
-    
-### Create many consumers on a queue ###        
+      
+### Create many consumers on a queue ###       
 
 The following consumes 10 messages from the broker on the queue *consumerqueue*, but creates 10 consumers for that
 queue.
@@ -478,7 +498,19 @@ to handle the incoming consumer
         }
     }
 
-
+### Consume messages with a delay ###
+        
+The following configures the consumer to have a delay.  It creates a consumer that has an added delay
+(basically a thread sleep), of 100 millis
+       
+    createScenario(
+        "consumer 10 messages" connect_to "tcp://localhost:61616?daemon=true&jms.closeTimeout=200"
+        until_no_of_messages_consumed 5
+        consume from queue "consumerqueue"
+        prefetch 1
+        with_per_message_delay_of(Duration(1,TimeUnit.SECONDS))
+    )                  
+      
 
 ----
 
