@@ -690,3 +690,4 @@ The distribution comes with a selection of example:
 - ProduceAndConsumeToQueueExample : Example of sending and consuming from a queue
 - ProduceAndConsumeToQueueFromFileExample : Example that sends the content of a file from the `data-files` directory
 - ProduceAndConsumeToTopicExample : Example sending and consuming from a topic
+- ProduceAndConsumeToQueueWithNoPersistenceExample : Example for sending non persistent message with a ttl to a queue
