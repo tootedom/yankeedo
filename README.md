@@ -80,15 +80,15 @@ You can use the library in two ways:
 
 The distribution can be found in either *.tar.gz* or *.zip*:
 
-- http://search.maven.org/remotecontent?filepath=org/greencheek/mq/yankeedo-distro/0.1.6/yankeedo-distro-0.1.6-bundle.tar.gz
-- http://search.maven.org/remotecontent?filepath=org/greencheek/mq/yankeedo-distro/0.1.6/yankeedo-distro-0.1.6-bundle.zip
+- http://search.maven.org/remotecontent?filepath=org/greencheek/mq/yankeedo-distro/0.1.7/yankeedo-distro-0.1.7-bundle.tar.gz
+- http://search.maven.org/remotecontent?filepath=org/greencheek/mq/yankeedo-distro/0.1.7/yankeedo-distro-0.1.7-bundle.zip
 
 The maven dependency is on maven central and can be included with the following:
 
     <dependency>
         <groupId>org.greencheek.mq</groupId>
         <artifactId>yankeedo-core</artifactId>
-        <version>0.1.6</version>
+        <version>0.1.7</version>
         <scope>test</scope>
     </dependency>
     
@@ -97,9 +97,11 @@ If you want to use the extra message sources (discussed later), can be included 
     <dependency>
         <groupId>org.greencheek.mq</groupId>
         <artifactId>yankeedo-messagesources</artifactId>
-        <version>0.1.6</version>
+        <version>0.1.7</version>
         <scope>test</scope>
     </dependency>
+    
+Please use 0.1.7, as 0.1.6 contained a couple of bugs meaning that non persistent message sending was not functioning    
     
     
 ## Distribution Quick Example ##
@@ -116,14 +118,14 @@ and then run the *./bin/yankeedoo.sh* file.
       withScenarios(
         List(
           createScenario(
-            "Consumer messages scenario" connect_to "tcp://localhost:61616?daemon=true&jms.closeTimeout=200"
-              until_no_of_messages_sent 100
+            "Consume messages scenario" connect_to "tcp://localhost:61616?daemon=true&jms.closeTimeout=200"
+              until_no_of_messages_consumed 100
               consume from queue "YankeedooProductAndConsumeToQueueExample"
               prefetch 10
               with_message_consumer SystemOutToStringCamelMessageProcessor
           ),
           createScenario(
-            "Product 100 messages scenario" connect_to "tcp://localhost:61616?daemon=true&jms.closeTimeout=200"
+            "Produce 100 messages scenario" connect_to "tcp://localhost:61616?daemon=true&jms.closeTimeout=200"
               until_no_of_messages_sent 100
               produce to queue "YankeedooProductAndConsumeToQueueExample"
               with_persistent_delivery
@@ -321,14 +323,14 @@ from the *<DISTRO_DIR>/data-files* directory:
       withScenarios(
         List(
           createScenario(
-            "Consumer messages scenario only consume half" connect_to "tcp://localhost:61616?daemon=true&jms.closeTimeout=200"
-              until_no_of_messages_sent 50
+            "Consume messages scenario only consume half" connect_to "tcp://localhost:61616?daemon=true&jms.closeTimeout=200"
+              until_no_of_messages_consumed 50
               consume from queue "YankeedooProductAndConsumeToQueueExampleViaFile"
               prefetch 10
               with_message_consumer SystemOutToStringCamelMessageProcessor
           ),
           createScenario(
-            "Product 100 messages scenario" connect_to "tcp://localhost:61616?daemon=true&jms.closeTimeout=200"
+            "Produce 100 messages scenario" connect_to "tcp://localhost:61616?daemon=true&jms.closeTimeout=200"
               until_no_of_messages_sent 100
               produce to queue "YankeedooProductAndConsumeToQueueExampleViaFile"
               with_message_source new FileBasedMessageSource(testDirectoryPath,false,messageHeaders)
@@ -385,14 +387,14 @@ Putting the following code within the *<DISTRO_DIR>/user-files/scenarios/* direc
       withScenarios(
         List(
           createScenario(
-            "Consumer messages scenario" connect_to "tcp://localhost:61616?daemon=true&jms.closeTimeout=200"
-              until_no_of_messages_sent 4
+            "Consume messages scenario" connect_to "tcp://localhost:61616?daemon=true&jms.closeTimeout=200"
+              until_no_of_messages_consumed 4
               consume from queue "YankeedooProductAndConsumeToQueueFromDirectoryExample"
               prefetch 10
               with_message_consumer SystemOutToStringCamelMessageProcessor
           ),
           createScenario(
-            "Product 100 messages scenario" connect_to "tcp://localhost:61616?daemon=true&jms.closeTimeout=200"
+            "Produce 100 messages scenario" connect_to "tcp://localhost:61616?daemon=true&jms.closeTimeout=200"
               until_no_of_messages_sent 10
               produce to queue "YankeedooProductAndConsumeToQueueFromDirectoryExample"
               with_message_source directorySource
@@ -477,7 +479,7 @@ to handle the incoming consumer
     val messageProcessor = new CountingMessageProcessor()
 
     val consumerScenario1 = createScenario(
-        "produce 10 message scenario" connect_to "tcp://localhost:" +  port + "?daemon=true&jms.closeTimeout=200"
+        "consume 10 message scenario" connect_to "tcp://localhost:" +  port + "?daemon=true&jms.closeTimeout=200"
         until_no_of_messages_consumed 10
         consume from queue "scenariocontainer"
         with_message_consumer messageProcessor
@@ -504,7 +506,7 @@ The following configures the consumer to have a delay.  It creates a consumer th
 (basically a thread sleep), of 100 millis
        
     createScenario(
-        "consumer 10 messages" connect_to "tcp://localhost:61616?daemon=true&jms.closeTimeout=200"
+        "consume 10 messages" connect_to "tcp://localhost:61616?daemon=true&jms.closeTimeout=200"
         until_no_of_messages_consumed 5
         consume from queue "consumerqueue"
         prefetch 1
@@ -530,14 +532,14 @@ provided in the distribution showing the statistics output, is like the followin
       withScenarios(
         List(
           createScenario(
-            "Consumer messages scenario" connect_to "tcp://localhost:61616?daemon=true&jms.closeTimeout=200"
-              until_no_of_messages_sent 100
+            "Consume messages scenario" connect_to "tcp://localhost:61616?daemon=true&jms.closeTimeout=200"
+              until_no_of_messages_consumed 100
               consume from queue "YankeedooProductAndConsumeToQueueExample"
               prefetch 1
               with_message_consumer SystemOutToStringCamelMessageProcessor
           ),
           createScenario(
-            "Product 100 messages scenario" connect_to "tcp://localhost:61616?daemon=true&jms.closeTimeout=200"
+            "Produce 100 messages scenario" connect_to "tcp://localhost:61616?daemon=true&jms.closeTimeout=200"
               until_no_of_messages_sent 100
               produce to queue "YankeedooProductAndConsumeToQueueExample"
               with_per_message_delay_of Duration(100,MILLISECONDS)
@@ -626,8 +628,8 @@ The statistics output looks as follows.  There will be a set of statistics for e
 
 The distribution can be found in either *.tar.gz* or *.zip*:
 
-- http://search.maven.org/remotecontent?filepath=org/greencheek/mq/yankeedo-distro/0.1.6/yankeedo-distro-0.1.6-bundle.tar.gz
-- http://search.maven.org/remotecontent?filepath=org/greencheek/mq/yankeedo-distro/0.1.6/yankeedo-distro-0.1.6-bundle.zip
+- http://search.maven.org/remotecontent?filepath=org/greencheek/mq/yankeedo-distro/0.1.7/yankeedo-distro-0.1.7-bundle.tar.gz
+- http://search.maven.org/remotecontent?filepath=org/greencheek/mq/yankeedo-distro/0.1.7/yankeedo-distro-0.1.7-bundle.zip
 
 
 The distribution folder structure looks as follows:
@@ -669,7 +671,7 @@ The distribution folder structure looks as follows:
 To run yankeedo, Change directories to the installation folder, and execute the `/bin/yankeedo.sh`. You will see something
 similar to the following:
 
-    YANKEEDO_HOME is set to /Users/dominictootell/tmp/yankeedo-distro-0.1.6
+    YANKEEDO_HOME is set to /Users/dominictootell/tmp/yankeedo-distro-0.1.7
     Choose a scenario number to run:
          [0] ProduceAndConsumeToQueueWithStatsExample
          [1] ProduceAndConsumeToQueueFromADirectory

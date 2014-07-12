@@ -16,7 +16,7 @@ class ProduceAndConsumeToQueueFromFileExample extends ScenarioContainer {
     List(
       createScenario(
         "Consumer messages scenario only consume half" connect_to "tcp://localhost:61616?daemon=true&jms.closeTimeout=200"
-          until_no_of_messages_sent 50
+          until_no_of_messages_consumed 50
           consume from queue "YankeedooProductAndConsumeToQueueExampleViaFile"
           prefetch 10
           with_message_consumer SystemOutToStringCamelMessageProcessor
