@@ -300,7 +300,7 @@ It is completely possible to send any message body, and any range of headers.  T
     <dependency>
         <groupId>org.greencheek.mq</groupId>
         <artifactId>yankeedo-messagesources</artifactId>
-        <version>0.1.3</version>
+        <version>0.1.10</version>
         <scope>test</scope>
     </dependency>
     
