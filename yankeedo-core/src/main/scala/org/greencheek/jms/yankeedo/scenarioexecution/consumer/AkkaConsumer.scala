@@ -26,7 +26,6 @@ import org.greencheek.jms.yankeedo.scenarioexecution.ConsumerFinished
 import scala.concurrent.duration.{Duration, FiniteDuration}
 import scala.concurrent.duration.SECONDS
 import org.greencheek.jms.yankeedo.scenarioexecution.consumer.messageprocessor.CamelMessageProcessor
-import org.LatencyUtils.LatencyStats
 import grizzled.slf4j.Logging
 import org.greencheek.jms.yankeedo.stats.TimingServices
 import javax.jms.JMSException

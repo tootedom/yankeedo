@@ -17,7 +17,7 @@ package org.greencheek.jms.yankeedo.stats
 
 import java.util.concurrent.TimeUnit
 import org.LatencyUtils.LatencyStats
-import org.HdrHistogram.{HistogramData, HistogramIterationValue}
+import org.HdrHistogram.{AbstractHistogram, Histogram, HistogramData, HistogramIterationValue}
 import scala.concurrent.duration.Duration
 import com.dongxiguo.fastring.Fastring.Implicits._
 import scala.collection.JavaConversions._
@@ -63,8 +63,8 @@ object BlockStatsFormatter extends  StatsFormatter {
     }
   }
 
-  private def getPercentiles(histoData : HistogramData) : SortedSet[Double] = {
-    val p : HistogramData#Percentiles = histoData.percentiles(1)
+  private def getPercentiles(histoData : Histogram) : SortedSet[Double] = {
+    val p : AbstractHistogram#Percentiles = histoData.percentiles(1)
 
     val defaultSortedSet = scala.collection.mutable.SortedSet[Double]()
     for(value : HistogramIterationValue <-  p.iterator()) {
@@ -119,8 +119,8 @@ object BlockStatsFormatter extends  StatsFormatter {
                           timeunit: TimeUnit): String = {
 
     val abrev = getShortNameForTimeUnit(timeunit)
-    stats.forceIntervalUpdate()
-    val histoData: HistogramData = stats.getAccumulatedHistogram.getHistogramData
+    stats.forceIntervalSample()
+    val histoData: Histogram = stats.getAccumulatedHistogram
 
     val percentiles : SortedSet[Double] = getPercentiles(histoData)
 
@@ -137,7 +137,7 @@ object BlockStatsFormatter extends  StatsFormatter {
 ${rightPad("================================================================================", 80)}
 ${rightPad(name, 80)}
 ${rightPad("================================================================================", 80)}
-${formatLine("number of messages: ", total)}
+${formatLine("number of recorded stats: ", total)}
 ${formatLine("min value:", toTimeUnit(minVal, timeunit), abrev)}
 ${formatLine("max value:", toTimeUnit(maxVal, timeunit), abrev)}
 ${formatLine("mean:", toTimeUnit(meanVal, timeunit), abrev + " (" + calcMessagePerSec(timeunit, meanVal) + " msg/sec)")}
@@ -157,7 +157,7 @@ ${formatLine("stddev:", toTimeUnit(stddevVal, timeunit), abrev + " (" + calcMess
   }
 
   private def createPercentilesString(percentiles : SortedSet[Double],timeunit : TimeUnit,
-                                      abrev : String, histdata: HistogramData) : String = {
+                                      abrev : String, histdata: Histogram) : String = {
     val builder : StringBuilder = new StringBuilder(500)
     for(percentile : Double <- percentiles) {
       val pString = f"$percentile%.2f"+"%ile:"

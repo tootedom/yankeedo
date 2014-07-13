@@ -628,8 +628,8 @@ The statistics output looks as follows.  There will be a set of statistics for e
 
 The distribution can be found in either *.tar.gz* or *.zip*:
 
-- http://search.maven.org/remotecontent?filepath=org/greencheek/mq/yankeedo-distro/0.1.7/yankeedo-distro-0.1.7-bundle.tar.gz
-- http://search.maven.org/remotecontent?filepath=org/greencheek/mq/yankeedo-distro/0.1.7/yankeedo-distro-0.1.7-bundle.zip
+- http://search.maven.org/remotecontent?filepath=org/greencheek/mq/yankeedo-distro/0.1.8/yankeedo-distro-0.1.8-bundle.tar.gz
+- http://search.maven.org/remotecontent?filepath=org/greencheek/mq/yankeedo-distro/0.1.8/yankeedo-distro-0.1.8-bundle.zip
 
 
 The distribution folder structure looks as follows:

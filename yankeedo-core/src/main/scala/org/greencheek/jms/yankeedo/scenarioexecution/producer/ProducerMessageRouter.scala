@@ -44,8 +44,8 @@ class ProducerMessageRouter(scenario : Scenario,
                             children : (ActorContext, AtomicLong) => List[ActorRef]) extends ScenarioExecutionMonitor(scenario,children) {
 
   import ProducerMessageRouter._
-  val messagesToSend = new AtomicLong(scenario.numberOfMessages)
-  val infinite : Boolean = if(messagesToSend.get() == -1) true else false
+  var messagesToSend = scenario.numberOfMessages
+  val infinite : Boolean = if(messagesToSend == -1) true else false
   val stopped = new AtomicBoolean(false)
   val producer : Producer =  scenario.jmsAction.asInstanceOf[Producer]
   val messageSource : CamelMessageSource = producer.messageSource
@@ -57,13 +57,13 @@ class ProducerMessageRouter(scenario : Scenario,
     case SendMessage => {
       if (!stopped.get) {
         if(!infinite) {
-          val currentMessageNumber = messagesToSend.decrementAndGet()
+          messagesToSend = messagesToSend - 1
 
-          if (currentMessageNumber == -1 ) {
+          if (messagesToSend == -1 ) {
             markAsStopped
             notifyMonitor
           }
-          else if (currentMessageNumber < -1) {
+          else if (messagesToSend < -1) {
             markAsStopped
           }
           else {
