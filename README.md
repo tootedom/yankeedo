@@ -21,19 +21,19 @@
             - [Consume messages with a delay](#consume-messages-with-a-delay) 
     - [Statistics](#statistics)
     - [Distribution](#distribution)
+        - [Passing System Properties to a Scenario](#passing-system-properties-to-a-scenario)
 
 ----
 
 # Yankeedo #
 
-Yankeedo is a simple way to store a set of scripts that produce to or consumer from an activemq broker.
-This allows you to build a set of AMQ message producers and consumer, that can send various messages to
-a broker; or consume from various queue.
+Yankeedo is a simple way to store a set of scripts that produce to and/or consumer from an activemq broker.
+This allows you to build a set of AMQ message producers and consumers, that can use to send and consume various messages
+to topics or queues. 
 
-It could help you set the setup of your ActiveMQ broker, and how it adapts for certain scenarios.
-
-You can use Yankeedo during testing, i.e. integration or load testing, so you can see how your application adapts to various
- messaging rates or/and formats.
+There are a couple of use cases for Yankeedo, some of those could be as follows:
+- Help you in scenario testing the setup of your ActiveMQ broker, and how it adapts to certain scenarios/use cases.
+- Yankeedo during testing, i.e. integration or load testing, so you can see how your application adapts to various messaging rates or/and formats.
 
 Yankeedo comes in two forms:
 
@@ -80,15 +80,15 @@ You can use the library in two ways:
 
 The distribution can be found in either *.tar.gz* or *.zip*:
 
-- http://search.maven.org/remotecontent?filepath=org/greencheek/mq/yankeedo-distro/0.1.7/yankeedo-distro-0.1.7-bundle.tar.gz
-- http://search.maven.org/remotecontent?filepath=org/greencheek/mq/yankeedo-distro/0.1.7/yankeedo-distro-0.1.7-bundle.zip
+- http://search.maven.org/remotecontent?filepath=org/greencheek/mq/yankeedo-distro/0.1.10/yankeedo-distro-0.1.10-bundle.tar.gz
+- http://search.maven.org/remotecontent?filepath=org/greencheek/mq/yankeedo-distro/0.1.10/yankeedo-distro-0.1.10-bundle.zip
 
 The maven dependency is on maven central and can be included with the following:
 
     <dependency>
         <groupId>org.greencheek.mq</groupId>
         <artifactId>yankeedo-core</artifactId>
-        <version>0.1.7</version>
+        <version>0.1.10</version>
         <scope>test</scope>
     </dependency>
     
@@ -97,11 +97,12 @@ If you want to use the extra message sources (discussed later), can be included 
     <dependency>
         <groupId>org.greencheek.mq</groupId>
         <artifactId>yankeedo-messagesources</artifactId>
-        <version>0.1.7</version>
+        <version>0.1.10</version>
         <scope>test</scope>
     </dependency>
     
-Please use 0.1.7, as 0.1.6 contained a couple of bugs meaning that non persistent message sending was not functioning    
+Please use a version greater than 0.1.6, as 0.1.6 contained a couple of bugs meaning that non persistent message 
+sending was not functioning.    
     
     
 ## Distribution Quick Example ##
@@ -622,14 +623,52 @@ The statistics output looks as follows.  There will be a set of statistics for e
     ================================================================================
 ````
 
+If a percentile has no available value, the msg/sec value will be '-'.  For example, in the below
+the 80th percentile has no value in the backend latency stats, therefore a msg/sec value cannot be
+calculated:
+
+````
+    ================================================================================
+    Consumer messages scenario                                                      
+    ================================================================================
+    number of messages:                              99999.00
+    number of recorded stats:                        100885.00
+    min value:                                          0.00 ms
+    max value:                                         65.80 ms
+    mean:                                               0.54 ms (1846.79 msg/sec)
+    stddev:                                             1.23 ms (814.02 msg/sec)
+    80.00%ile:                                          1.00 ms (1000.58 msg/sec)
+    90.00%ile:                                          1.00 ms (1000.58 msg/sec)
+    99.00%ile:                                          4.98 ms (200.77 msg/sec)
+    99.90%ile:                                         12.98 ms (77.06 msg/sec)
+    
+    ================================================================================
+    
+    ================================================================================
+    Produce 100000 messages scenario                                                
+    ================================================================================
+    number of messages:                              99999.00
+    number of recorded stats:                        103318.00
+    min value:                                          0.00 ms
+    max value:                                        231.74 ms
+    mean:                                               0.25 ms (3960.52 msg/sec)
+    stddev:                                             2.40 ms (417.29 msg/sec)
+    80.00%ile:                                          0.00 ms ( -  msg/sec)
+    90.00%ile:                                          1.00 ms (1000.58 msg/sec)
+    99.00%ile:                                          3.00 ms (333.53 msg/sec)
+    99.90%ile:                                          7.24 ms (138.09 msg/sec)
+    
+    ================================================================================
+````
+
 ----
 
 # Distribution #
 
 The distribution can be found in either *.tar.gz* or *.zip*:
 
-- http://search.maven.org/remotecontent?filepath=org/greencheek/mq/yankeedo-distro/0.1.8/yankeedo-distro-0.1.8-bundle.tar.gz
-- http://search.maven.org/remotecontent?filepath=org/greencheek/mq/yankeedo-distro/0.1.8/yankeedo-distro-0.1.8-bundle.zip
+- http://search.maven.org/remotecontent?filepath=org/greencheek/mq/yankeedo-distro/0.1.10/yankeedo-distro-0.1.10-bundle.tar.gz
+- http://search.maven.org/remotecontent?filepath=org/greencheek/mq/yankeedo-distro/0.1.10/yankeedo-distro-0.1.10-bundle.zip
 
 
 The distribution folder structure looks as follows:
@@ -671,13 +710,14 @@ The distribution folder structure looks as follows:
 To run yankeedo, Change directories to the installation folder, and execute the `/bin/yankeedo.sh`. You will see something
 similar to the following:
 
-    YANKEEDO_HOME is set to /Users/dominictootell/tmp/yankeedo-distro-0.1.7
+    YANKEEDO_HOME is set to /tmp/yankeedo-distro-0.1.10
     Choose a scenario number to run:
-         [0] ProduceAndConsumeToQueueWithStatsExample
-         [1] ProduceAndConsumeToQueueFromADirectory
-         [2] org.greencheek.jms.yankeedo.app.ProduceAndConsumeToQueueExample
-         [3] org.greencheek.jms.yankeedo.app.ProduceAndConsumeToQueueFromFileExample
-         [4] org.greencheek.jms.yankeedo.app.ProduceAndConsumeToTopicExample
+         [0] ProduceAndConsumeToQueueFromADirectory
+         [1] ProduceAndConsumeToQueueWithNoPersistenceExample
+         [2] ProduceAndConsumeToQueueWithStatsExample
+         [3] org.greencheek.jms.yankeedo.app.ProduceAndConsumeToQueueExample
+         [4] org.greencheek.jms.yankeedo.app.ProduceAndConsumeToQueueFromFileExample
+         [5] org.greencheek.jms.yankeedo.app.ProduceAndConsumeToTopicExample
 
 
 To run one of the examples you press the associated number, i.e. 0 and press return.
@@ -693,3 +733,14 @@ The distribution comes with a selection of example:
 - ProduceAndConsumeToQueueFromFileExample : Example that sends the content of a file from the `data-files` directory
 - ProduceAndConsumeToTopicExample : Example sending and consuming from a topic
 - ProduceAndConsumeToQueueWithNoPersistenceExample : Example for sending non persistent message with a ttl to a queue
+
+----
+
+## Passing System Properties to a Scenario ##
+
+If you have developed a producer or a consumer that requires any system properties to operate, you can pass
+those system properties by setting the environment variable `YANKEEDO_JAVA_OPTS`:
+
+    export YANKEEDO_JAVA_OPTS="-Dmyproperty=value -Dmyproperty2=value2"
+    
+and then run `./bin/yankeedo.sh`; this will make the System Properties available    
