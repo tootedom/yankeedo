@@ -15,21 +15,14 @@
  */
 package org.greencheek.jms.yankeedo.stats
 
-import org.LatencyUtils.{LatencyStats, SimplePauseDetector, PauseDetector}
-import org.LatencyUtils.LatencyStats.Builder
-
-object TimingServices {
-  val PAUSE_DETECTOR: PauseDetector = new SimplePauseDetector()
-}
-
 
 /**
  * Created by dominictootell on 23/03/2014.
  */
 class TimingServices(val useNanoTime : Boolean,
-                   val recordStatsImmediately : Boolean) {
+                     val recordStatsImmediately : Boolean) {
 
-  val stats : LatencyStats = Builder.create().pauseDetector(TimingServices.PAUSE_DETECTOR).build()
+  val stats : LatencyInfo = new LatencyInfo()
 
   var lastMessageTime : Long = recordStatsImmediately match {
     case true => nanoTime()
@@ -46,10 +39,11 @@ class TimingServices(val useNanoTime : Boolean,
 
   def recordStats() = {
     val currTime = nanoTime
-    if(lastMessageTime != -1) {
-      val timeTaken =  currTime - lastMessageTime
+    val lastMessageTiming = lastMessageTime
+    if(lastMessageTiming != -1) {
+      val timeTaken =  currTime - lastMessageTiming
       if (timeTaken >= 0)  {
-        stats.recordLatency(timeTaken)
+        stats.record(timeTaken)
       }
     }
     lastMessageTime = currTime

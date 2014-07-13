@@ -28,5 +28,5 @@ trait StatsFormatter {
    * @param stats The stats object itself
    * @return
    */
-  def formatToString(scenarioName: String, timeunit: TimeUnit, stats: LatencyStats): String
+  def formatToString(scenarioName: String, timeunit: TimeUnit, stats: LatencyInfo): String
 }

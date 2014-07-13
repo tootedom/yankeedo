@@ -38,12 +38,12 @@ object BlockStatsFormatter extends  StatsFormatter {
    * @param stats The stats object itself
    * @return
    */
-  def formatToString(scenarioName: String, timeunit: TimeUnit, stats: LatencyStats): String = {
+  def formatToString(scenarioName: String, timeunit: TimeUnit, stats: LatencyInfo): String = {
     outputStats(scenarioName, stats, timeunit)
   }
 
   private def calcMessagePerSec(timeUnit: TimeUnit, value: Double): String = {
-    if(value < 0) {
+    if(value <= 0) {
       " - "
     } else {
       val doCalc: Boolean = timeUnit match {
@@ -55,10 +55,20 @@ object BlockStatsFormatter extends  StatsFormatter {
       }
 
       if (doCalc) {
-        val requestsPerSec = ((1 / value) * 1000000000)
+        val requestsPerSec = ((1.0 / value) * 1000000000.0)
         f"$requestsPerSec%.2f"
       } else {
         " - "
+      }
+    }
+  }
+
+  private def getPercentileValue(histoData : Histogram, percentileToObtain : Double) : Long = {
+    try {
+      histoData.getValueAtPercentile(percentileToObtain)
+    }  catch {
+      case e: ArrayIndexOutOfBoundsException => {
+        return 0
       }
     }
   }
@@ -74,50 +84,33 @@ object BlockStatsFormatter extends  StatsFormatter {
       }
     }
 
-    var pp80Val: Double = -1.0
-    try {
-      pp80Val = histoData.getValueAtPercentile(80.0)
-    } catch {
-      case e: ArrayIndexOutOfBoundsException => {
-       return defaultSortedSet
-      }
-    }
-    //
+    val availablePercentilesSortedSet = scala.collection.mutable.SortedSet[Double]()
 
-    var pp90Val: Double = -1.0
-    try {
-      pp90Val = histoData.getValueAtPercentile(90.0)
-    } catch {
-      case e: ArrayIndexOutOfBoundsException => {
-        return defaultSortedSet
-      }
-    }
-    //
-    var pp99Val: Double = -1.0
-    try {
-      pp99Val = histoData.getValueAtPercentile(99.0)
-    } catch {
-      case e: ArrayIndexOutOfBoundsException => {
-        return defaultSortedSet
-      }
-    }
+    var pp80Val: Double = getPercentileValue(histoData,80.0)
+    if(pp80Val!=0) availablePercentilesSortedSet.add(80.0)
 
-    var pp999Val: Double = -1.0
-    try {
-      pp999Val = histoData.getValueAtPercentile(99.9)
-    } catch {
-      case e: ArrayIndexOutOfBoundsException => {
-        return defaultSortedSet
-      }
-    }
 
-    SortedSet(80.0,90.0,99.0,99.9)
+    var pp90Val: Double = getPercentileValue(histoData,90.0)
+    if(pp90Val!=0) availablePercentilesSortedSet.add(90.0)
+
+    var pp99Val: Double = getPercentileValue(histoData,99.0)
+    if(pp99Val!=0) availablePercentilesSortedSet.add(99.0)
+
+    var pp999Val: Double = getPercentileValue(histoData,99.9)
+    if(pp999Val!=0) availablePercentilesSortedSet.add(99.9)
+
+    if(availablePercentilesSortedSet.size <3) {
+      defaultSortedSet
+    } else {
+      SortedSet(80.0,90.0,99.0,99.9)
+    }
   }
 
   private def outputStats(name: String,
-                          stats: LatencyStats,
+                          latencyInfo: LatencyInfo,
                           timeunit: TimeUnit): String = {
 
+    val stats : LatencyStats = latencyInfo.getStats
     val abrev = getShortNameForTimeUnit(timeunit)
     stats.forceIntervalSample()
     val histoData: Histogram = stats.getAccumulatedHistogram
@@ -137,6 +130,7 @@ object BlockStatsFormatter extends  StatsFormatter {
 ${rightPad("================================================================================", 80)}
 ${rightPad(name, 80)}
 ${rightPad("================================================================================", 80)}
+${formatLine("number of messages: ", latencyInfo.getNumberOfStatsRequestedRecording)}
 ${formatLine("number of recorded stats: ", total)}
 ${formatLine("min value:", toTimeUnit(minVal, timeunit), abrev)}
 ${formatLine("max value:", toTimeUnit(maxVal, timeunit), abrev)}

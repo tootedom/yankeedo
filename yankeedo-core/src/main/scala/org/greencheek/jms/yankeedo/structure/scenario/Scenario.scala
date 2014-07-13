@@ -22,11 +22,6 @@ import org.LatencyUtils.{PauseDetector, SimplePauseDetector}
 import org.greencheek.jms.yankeedo.stats.{TimingServices, OutputStats}
 import java.util.concurrent.atomic.AtomicReference
 
-
-object Scenario {
-  val PAUSE_DETECTOR : PauseDetector = new SimplePauseDetector()
-}
-
 /**
  * User: dominictootell
  * Date: 02/01/2013

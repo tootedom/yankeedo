@@ -35,8 +35,6 @@ import org.greencheek.jms.yankeedo.stats.TimingServices
 class ProducerExecutor(val scenario : Scenario,
                        val statsRecorder : TimingServices) extends Actor with Logging {
 
-  val messagesToBeSent = scenario.numberOfMessages
-  var totalMessagesSent = 0
   var messagesSendOk = 0
   var messagesNotSendOk = 0
   val producer = context.actorOf(Props(new ProducerMessageRouter(scenario,producerActorCreation(scenario,self,_,_))),"producermonitor")
@@ -82,21 +80,14 @@ class ProducerExecutor(val scenario : Scenario,
       }
     }
     case camel : CamelMessage => {
-      if(messagesToBeSent == -1 || totalMessagesSent<=messagesToBeSent) {
-        totalMessagesSent+=1
-        messagesSendOk+=1
-        sendMessage
-        recordStats()
-      }
-
+      messagesSendOk+=1
+      sendMessage
+      recordStats()
     }
     case failure : Failure => {
-      if(messagesToBeSent == -1 || totalMessagesSent<=messagesToBeSent) {
-        totalMessagesSent += 1
-        messagesNotSendOk += 1
-        sendMessage
-        recordStats()
-      }
+      messagesNotSendOk += 1
+      sendMessage
+      recordStats()
     }
     case Terminated(`producer`) => {
       productMonitorTerminated.set(true)
